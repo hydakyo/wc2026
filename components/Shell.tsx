@@ -4,6 +4,7 @@ const navItems = [
   ['/standings', 'Standings'],
   ['/bracket', 'Bracket'],
   ['/teams', 'Teams'],
+  ['/health', 'Health'],
   ['/display', 'TV Mode']
 ];
 
