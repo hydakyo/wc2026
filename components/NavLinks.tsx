@@ -3,10 +3,9 @@
 import { usePathname } from 'next/navigation';
 
 const navItems = [
-  ['/', 'Tổng quan'],
-  ['/matches', 'Trận đấu'],
-  ['/standings', 'Phân tích'],
-  ['/bracket', 'Vòng loại trực tiếp']
+  { href: '/', label: 'Trận đấu', activePaths: ['/', '/matches'] },
+  { href: '/standings', label: 'Phân tích', activePaths: ['/standings', '/teams'] },
+  { href: '/bracket', label: 'Vòng loại trực tiếp', activePaths: ['/bracket'] }
 ];
 
 export function NavLinks() {
@@ -14,11 +13,11 @@ export function NavLinks() {
 
   return (
     <nav className="nav" aria-label="Điều hướng chính">
-      {navItems.map(([href, label]) => {
-        const active = href === '/' ? pathname === '/' : pathname.startsWith(href);
+      {navItems.map((item) => {
+        const active = item.activePaths.some((path) => (path === '/' ? pathname === '/' : pathname.startsWith(path)));
         return (
-          <a className={active ? 'active' : ''} key={href} href={href}>
-            {label}
+          <a className={active ? 'active' : ''} key={item.href} href={item.href}>
+            {item.label}
           </a>
         );
       })}
