@@ -6,26 +6,26 @@ export type StandingRow = { group: string; team: string; played: number; won: nu
 export type ThirdPlaceRow = StandingRow & { rank: number; status: string };
 
 export const teams: Team[] = [
-  team('MEX','Mexico','A','🇲🇽',14,'CONCACAF'), team('RSA','South Africa','A','🇿🇦',59,'CAF'), team('KOR','South Korea','A','🇰🇷',23,'AFC'), team('CZE','Czechia','A','🇨🇿',36,'UEFA'),
-  team('SUI','Switzerland','B','🇨🇭',19,'UEFA'), team('CAN','Canada','B','🇨🇦',31,'CONCACAF'), team('BIH','Bosnia and Herzegovina','B','🇧🇦',70,'UEFA'), team('QAT','Qatar','B','🇶🇦',58,'AFC'),
-  team('BRA','Brazil','C','🇧🇷',5,'CONMEBOL'), team('MAR','Morocco','C','🇲🇦',12,'CAF'), team('SCO','Scotland','C','🏴󠁧󠁢󠁳󠁣󠁴󠁿',39,'UEFA'), team('HTI','Haiti','C','🇭🇹',83,'CONCACAF'),
-  team('USA','United States','D','🇺🇸',13,'CONCACAF'), team('AUS','Australia','D','🇦🇺',24,'AFC'), team('PAR','Paraguay','D','🇵🇾',48,'CONMEBOL'), team('TUR','Turkey','D','🇹🇷',28,'UEFA'),
-  team('ECU','Ecuador','E','🇪🇨',32,'CONMEBOL'), team('GER','Germany','E','🇩🇪',10,'UEFA'), team('CIV','Ivory Coast','E','🇨🇮',46,'CAF'), team('CUW','Curacao','E','🇨🇼',88,'CONCACAF'),
-  team('NED','Netherlands','F','🇳🇱',7,'UEFA'), team('JPN','Japan','F','🇯🇵',18,'AFC'), team('SWE','Sweden','F','🇸🇪',29,'UEFA'), team('TUN','Tunisia','F','🇹🇳',41,'CAF'),
-  team('BEL','Belgium','G','🇧🇪',8,'UEFA'), team('EGY','Egypt','G','🇪🇬',33,'CAF'), team('IRI','Iran','G','🇮🇷',20,'AFC'), team('NZL','New Zealand','G','🇳🇿',91,'OFC'),
-  team('ESP','Spain','H','🇪🇸',3,'UEFA'), team('URU','Uruguay','H','🇺🇾',11,'CONMEBOL'), team('CPV','Cape Verde','H','🇨🇻',65,'CAF'), team('KSA','Saudi Arabia','H','🇸🇦',56,'AFC'),
-  team('FRA','France','I','🇫🇷',2,'UEFA'), team('NOR','Norway','I','🇳🇴',37,'UEFA'), team('SEN','Senegal','I','🇸🇳',21,'CAF'), team('IRQ','Iraq','I','🇮🇶',57,'AFC'),
-  team('ARG','Argentina','J','🇦🇷',1,'CONMEBOL'), team('AUT','Austria','J','🇦🇹',22,'UEFA'), team('DZA','Algeria','J','🇩🇿',44,'CAF'), team('JOR','Jordan','J','🇯🇴',63,'AFC'),
-  team('POR','Portugal','K','🇵🇹',6,'UEFA'), team('COL','Colombia','K','🇨🇴',9,'CONMEBOL'), team('COD','DR Congo','K','🇨🇩',61,'CAF'), team('UZB','Uzbekistan','K','🇺🇿',54,'AFC'),
-  team('ENG','England','L','🏴',4,'UEFA'), team('GHA','Ghana','L','🇬🇭',49,'CAF'), team('CRO','Croatia','L','🇭🇷',17,'UEFA'), team('PAN','Panama','L','🇵🇦',52,'CONCACAF')
+  team('MEX','Mexico','A','🇲🇽',14,'CONCACAF'), team('RSA','Nam Phi','A','🇿🇦',59,'CAF'), team('KOR','H\u00e0n Qu\u1ed1c','A','🇰🇷',23,'AFC'), team('CZE','C\u1ed9ng h\u00f2a S\u00e9c','A','🇨🇿',36,'UEFA'),
+  team('SUI','Th\u1ee5y S\u0129','B','🇨🇭',19,'UEFA'), team('CAN','Canada','B','🇨🇦',31,'CONCACAF'), team('BIH','Bosnia v\u00e0 Herzegovina','B','🇧🇦',70,'UEFA'), team('QAT','Qatar','B','🇶🇦',58,'AFC'),
+  team('BRA','Brazil','C','🇧🇷',5,'CONMEBOL'), team('MAR','Ma R\u1ed1c','C','🇲🇦',12,'CAF'), team('SCO','Scotland','C','🏴󠁧󠁢󠁳󠁣󠁴󠁿',39,'UEFA'), team('HTI','Haiti','C','🇭🇹',83,'CONCACAF'),
+  team('USA','Hoa K\u1ef3','D','🇺🇸',13,'CONCACAF'), team('AUS','\u00dac','D','🇦🇺',24,'AFC'), team('PAR','Paraguay','D','🇵🇾',48,'CONMEBOL'), team('TUR','Th\u1ed5 Nh\u0129 K\u1ef3','D','🇹🇷',28,'UEFA'),
+  team('ECU','Ecuador','E','🇪🇨',32,'CONMEBOL'), team('GER','\u0110\u1ee9c','E','🇩🇪',10,'UEFA'), team('CIV','B\u1edd Bi\u1ec3n Ng\u00e0','E','🇨🇮',46,'CAF'), team('CUW','Cura\u00e7ao','E','🇨🇼',88,'CONCACAF'),
+  team('NED','H\u00e0 Lan','F','🇳🇱',7,'UEFA'), team('JPN','Nh\u1eadt B\u1ea3n','F','🇯🇵',18,'AFC'), team('SWE','Th\u1ee5y \u0110i\u1ec3n','F','🇸🇪',29,'UEFA'), team('TUN','Tunisia','F','🇹🇳',41,'CAF'),
+  team('BEL','B\u1ec9','G','🇧🇪',8,'UEFA'), team('EGY','Ai C\u1eadp','G','🇪🇬',33,'CAF'), team('IRI','Iran','G','🇮🇷',20,'AFC'), team('NZL','New Zealand','G','🇳🇿',91,'OFC'),
+  team('ESP','T\u00e2y Ban Nha','H','🇪🇸',3,'UEFA'), team('URU','Uruguay','H','🇺🇾',11,'CONMEBOL'), team('CPV','Cape Verde','H','🇨🇻',65,'CAF'), team('KSA','\u1ea2 R\u1eadp X\u00ea \u00dat','H','🇸🇦',56,'AFC'),
+  team('FRA','Ph\u00e1p','I','🇫🇷',2,'UEFA'), team('NOR','Na Uy','I','🇳🇴',37,'UEFA'), team('SEN','Senegal','I','🇸🇳',21,'CAF'), team('IRQ','Iraq','I','🇮🇶',57,'AFC'),
+  team('ARG','Argentina','J','🇦🇷',1,'CONMEBOL'), team('AUT','\u00c1o','J','🇦🇹',22,'UEFA'), team('DZA','Algeria','J','🇩🇿',44,'CAF'), team('JOR','Jordan','J','🇯🇴',63,'AFC'),
+  team('POR','B\u1ed3 \u0110\u00e0o Nha','K','🇵🇹',6,'UEFA'), team('COL','Colombia','K','🇨🇴',9,'CONMEBOL'), team('COD','CHDC Congo','K','🇨🇩',61,'CAF'), team('UZB','Uzbekistan','K','🇺🇿',54,'AFC'),
+  team('ENG','Anh','L','🏴',4,'UEFA'), team('GHA','Ghana','L','🇬🇭',49,'CAF'), team('CRO','Croatia','L','🇭🇷',17,'UEFA'), team('PAN','Panama','L','🇵🇦',52,'CONCACAF')
 ];
 
 function team(code: string, name: string, group: string, flag: string, fifaRank: number, confed: string): Team { return { code, name, group, flag, fifaRank, confed }; }
 
 export const matches: Match[] = [
   match('m1','Group','A','MEX','RSA',2,0,'FT','2026-06-11T19:00:00Z','Mexico City'), match('m2','Group','A','KOR','CZE',2,1,'FT','2026-06-12T02:00:00Z','Guadalajara'), match('m3','Group','B','CAN','BIH',1,1,'FT','2026-06-12T19:00:00Z','Toronto'), match('m4','Group','C','BRA','MAR',1,1,'FT','2026-06-13T22:00:00Z','Miami'), match('m5','Group','D','USA','PAR',4,1,'FT','2026-06-13T01:00:00Z','Los Angeles'),
-  { ...match('live1','Group','K','COL','POR',1,1,'LIVE','2026-06-27T23:30:00Z','Dallas'), minute: 67, events: ['12\' Diaz goal','44\' Fernandes penalty','61\' Portugal yellow card'] },
-  { ...match('live2','Group','L','CRO','GHA',0,1,'LIVE','2026-06-27T21:00:00Z','Atlanta'), minute: 52, events: ['38\' Kudus goal','49\' Croatia pressure phase'] },
+  { ...match('live1','Group','K','COL','POR',1,1,'LIVE','2026-06-27T23:30:00Z','Dallas'), minute: 67, events: ['12\' Diaz ghi b\u00e0n','44\' Fernandes ghi b\u00e0n penalty','61\' B\u1ed3 \u0110\u00e0o Nha nh\u1eadn th\u1ebb v\u00e0ng'] },
+  { ...match('live2','Group','L','CRO','GHA',0,1,'LIVE','2026-06-27T21:00:00Z','Atlanta'), minute: 52, events: ['38\' Kudus ghi b\u00e0n','49\' Croatia t\u0103ng \u00e1p l\u1ef1c'] },
   match('u1','Group','J','ARG','JOR',null,null,'SCHEDULED','2026-06-28T02:00:00Z','New York/New Jersey'), match('u2','Round of 32',undefined,'RSA','CAN',null,null,'SCHEDULED','2026-06-28T19:00:00Z','Vancouver'), match('u3','Round of 32',undefined,'BRA','JPN',null,null,'SCHEDULED','2026-06-29T17:00:00Z','Houston'), match('u4','Round of 32',undefined,'NED','MAR',null,null,'SCHEDULED','2026-06-30T01:00:00Z','Atlanta')
 ];
 
@@ -44,11 +44,14 @@ function row(group: string, team: string, played: number, won: number, drawn: nu
 export const groups = Array.from(new Set(standings.map((item) => item.group)));
 export function rankSort(a: StandingRow, b: StandingRow) { return b.points - a.points || b.gd - a.gd || b.gf - a.gf || a.team.localeCompare(b.team); }
 export function tableFor(group: string) { return standings.filter((row) => row.group === group).sort(rankSort); }
-export function thirdPlaceRanking(): ThirdPlaceRow[] { return groups.map((group) => tableFor(group)[2]).filter(Boolean).sort(rankSort).map((team, index) => ({ ...team, rank: index + 1, status: index < 8 ? 'Qualified zone' : 'At risk' })); }
+export function thirdPlaceRanking(): ThirdPlaceRow[] { return groups.map((group) => tableFor(group)[2]).filter(Boolean).sort(rankSort).map((team, index) => ({ ...team, rank: index + 1, status: index < 8 ? 'V\u00f9ng \u0111i ti\u1ebfp' : 'Nguy c\u01a1 b\u1ecb lo\u1ea1i' })); }
 export function qualifiedTeams() { return { winners: groups.map((group) => tableFor(group)[0]), runnersUp: groups.map((group) => tableFor(group)[1]), bestThird: thirdPlaceRanking().slice(0, 8) }; }
 export function teamName(code: string) { return teams.find((team) => team.code === code)?.name ?? code; }
 export function teamLabel(code: string, includeCode = true) { const t = teams.find((team) => team.code === code); if (!t) return code; return `${t.flag} ${includeCode ? `${t.code} · ` : ''}${t.name}`; }
 export function formatKickoff(value: string) { return new Intl.DateTimeFormat('vi-VN', { timeZone: 'Asia/Ho_Chi_Minh', dateStyle: 'short', timeStyle: 'short' }).format(new Date(value)); }
+export function statusLabel(status: string) { return ({ LIVE: '\u0110ang \u0111\u00e1', HT: 'Ngh\u1ec9 gi\u1eefa hi\u1ec7p', FT: '\u0110\u00e3 k\u1ebft th\u00fac', SCHEDULED: 'S\u1eafp \u0111\u00e1' } as Record<string, string>)[status] ?? status; }
+export function stageLabel(stage: string) { return ({ Group: 'V\u00f2ng b\u1ea3ng', 'Round of 32': 'V\u00f2ng 32 \u0111\u1ed9i', 'Round of 16': 'V\u00f2ng 16 \u0111\u1ed9i', 'Quarter-final': 'T\u1ee9 k\u1ebft', 'Semi-final': 'B\u00e1n k\u1ebft', Final: 'Chung k\u1ebft' } as Record<string, string>)[stage] ?? stage; }
+export function bracketStatusLabel(status: string) { return ({ 'Official slot': 'Su\u1ea5t ch\u00ednh th\u1ee9c', Projected: 'D\u1ef1 ph\u00f3ng', Pending: 'Ch\u1edd x\u00e1c \u0111\u1ecbnh' } as Record<string, string>)[status] ?? status; }
 
 export function tournamentSummary() {
   const live = matches.filter((match) => match.status === 'LIVE'); const finished = matches.filter((match) => match.status === 'FT'); const upcoming = matches.filter((match) => match.status === 'SCHEDULED'); const q = qualifiedTeams();
