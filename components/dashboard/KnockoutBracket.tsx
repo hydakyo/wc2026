@@ -3,7 +3,7 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { standings as fallbackStandings, teamLabel } from '@/lib/worldcup-data';
 import { fetchScoreboard, fetchStandings } from '../../utils/api';
-import type { ESPNStandingsResponse, Event, StatValue, StandingRow, StandingsEntry } from '../../types/espn';
+import type { ESPNStandingsResponse, Event, StatValue, StandingsEntry } from '../../types/espn';
 import { translateTeamName } from '../../utils/translations';
 import MatchCard from './MatchCard';
 import Loader from './Loader';
