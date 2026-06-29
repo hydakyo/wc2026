@@ -1,13 +1,14 @@
 import { MatchCard, MetricCard } from '@/components/Cards';
 import { DataSourceBanner } from '@/components/DataSourceBanner';
-import { getTournamentData, tournamentSummaryForData } from '@/lib/live-data';
+import { getProductionTournamentData, tournamentSummaryForData } from '@/lib/production-data';
 
 export const dynamic = 'force-dynamic';
 export const revalidate = 0;
 
 export default async function DisplayPage() {
-  const data = await getTournamentData();
+  const data = await getProductionTournamentData();
   const summary = tournamentSummaryForData(data);
+  const displayMatches = summary.live.length ? summary.live : summary.upcoming.slice(0, 4);
   return (
     <main className="shell tv-shell">
       <DataSourceBanner source={data.source} />
@@ -15,12 +16,12 @@ export default async function DisplayPage() {
       <h1>WorldCup Pulse Live</h1>
       <section className="metric-grid">
         <MetricCard label="Đang đá" value={summary.liveCount} hint="Trận hiện tại" />
-        <MetricCard label="Bàn thắng" value={summary.goalsToday} hint="Tổng live" />
+        <MetricCard label="Tổng trận" value={data.matches.length} hint="Cửa sổ provider" />
         <MetricCard label="Đi tiếp" value={summary.qualifiedCount} hint="Suất hiện tại" />
         <MetricCard label="Tiếp theo" value={summary.upcoming[0]?.home ?? 'TBD'} hint="Trận sắp đá" />
       </section>
       <section className="grid live-grid">
-        {(summary.live.length ? summary.live : summary.upcoming.slice(0, 4)).map((match) => <MatchCard key={match.id} match={match} />)}
+        {displayMatches.length ? displayMatches.map((match) => <MatchCard key={match.id} match={match} />) : <div className="card"><p className="empty-copy">Chưa có dữ liệu trận từ provider.</p></div>}
       </section>
     </main>
   );
