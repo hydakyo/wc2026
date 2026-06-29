@@ -1,0 +1,141 @@
+.bracket-container {
+  width: 100%;
+}
+
+.bracket-note {
+  color: var(--text-secondary);
+  font-size: 0.9rem;
+  margin-bottom: var(--spacing-md);
+  font-style: italic;
+  text-align: center;
+}
+
+.bracket-scroll-area {
+  overflow-x: auto;
+  padding-bottom: var(--spacing-xl);
+  /* Custom scrollbar for better look on light mode */
+  scrollbar-width: thin;
+  scrollbar-color: var(--accent-cyan) rgba(0,0,0,0.05);
+}
+
+.bracket-stages {
+  display: flex;
+  gap: 40px; /* Space for connectors */
+  min-width: max-content;
+  padding: 20px;
+}
+
+.bracket-round {
+  display: flex;
+  flex-direction: column;
+  width: 260px;
+}
+
+.round-title {
+  text-align: center;
+  background: var(--card-bg);
+  padding: 10px;
+  border-radius: 8px;
+  border: 1px solid var(--card-border);
+  color: var(--accent-cyan);
+  margin-bottom: var(--spacing-lg);
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  box-shadow: var(--glass-shadow);
+  backdrop-filter: var(--glass-blur);
+}
+
+.round-matches {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  justify-content: space-around;
+  position: relative;
+}
+
+.bracket-match-wrapper {
+  position: relative;
+  margin: 10px 0;
+  display: flex;
+  align-items: center;
+}
+
+/* Base styles for the match cards inside bracket to fit nicely */
+.bracket-match-wrapper .match-card {
+  width: 100%;
+  margin: 0;
+  font-size: 0.9rem;
+  padding: 12px;
+}
+
+.mock-match-card {
+  width: 100%;
+  background: var(--card-bg);
+  border: 1px dashed var(--card-border);
+  border-radius: 12px;
+  padding: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  color: var(--text-secondary);
+  font-size: 0.85rem;
+  text-align: center;
+  backdrop-filter: var(--glass-blur);
+  box-shadow: var(--glass-shadow);
+}
+
+.mock-team {
+  padding: 4px;
+  background: rgba(0,0,0,0.02);
+  border-radius: 4px;
+}
+
+.mock-divider {
+  height: 1px;
+  background: var(--card-border);
+  width: 50%;
+  margin: 0 auto;
+}
+
+/* Connectors using Pseudo-elements */
+.connector-line {
+  position: absolute;
+  right: -20px;
+  width: 20px;
+  border-right: 2px solid var(--accent-cyan);
+  border-color: rgba(2, 132, 199, 0.3); /* Subtle cyan */
+}
+
+/* Top match of a pair */
+.connector-top {
+  top: 50%;
+  height: 50%; /* Will be adjusted by flex spacing */
+  border-top: 2px solid rgba(2, 132, 199, 0.3);
+  border-top-right-radius: 4px;
+}
+
+/* Bottom match of a pair */
+.connector-bottom {
+  bottom: 50%;
+  height: 50%;
+  border-bottom: 2px solid rgba(2, 132, 199, 0.3);
+  border-bottom-right-radius: 4px;
+}
+
+/* Ensure the lines stretch correctly depending on the round. 
+   In flexbox with space-around, the height difference grows exponentially. */
+.round-0 .connector-line { height: calc(50% + 10px); }
+.round-1 .connector-line { height: calc(100% + 10px); }
+.round-2 .connector-line { height: calc(200% + 10px); }
+.round-3 .connector-line { height: calc(400% + 10px); }
+
+/* Horizontal line entering the next match */
+.bracket-round + .bracket-round .bracket-match-wrapper::before {
+  content: '';
+  position: absolute;
+  left: -20px;
+  top: 50%;
+  width: 20px;
+  border-top: 2px solid rgba(2, 132, 199, 0.3);
+}

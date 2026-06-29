@@ -1,16 +1,18 @@
-import type { Metadata } from 'next';
-import './globals.css';
-import './provider.css';
+import '../styles/index.css';
 
-export const metadata: Metadata = {
-  title: 'WorldCup Pulse 2026',
-  description: 'Bảng điều khiển thời gian thực cho FIFA World Cup 2026'
-};
+export const metadata = {
+  title: 'World Cup 2026 Dashboard',
+  description: 'Theo dõi giải đấu vô địch bóng đá thế giới',
+}
 
-export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
+export default function RootLayout({
+  children,
+}: {
+  children: React.ReactNode
+}) {
   return (
     <html lang="vi">
       <body>{children}</body>
     </html>
-  );
+  )
 }
