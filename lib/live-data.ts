@@ -26,6 +26,9 @@ export type TournamentData = {
   source: DataSourceInfo;
 };
 
+type BracketSlot = typeof mockBracket[number];
+type Seed = { team: string; group: string; slot: string };
+
 type FootballDataTeam = {
   id?: number;
   name?: string;
@@ -147,7 +150,8 @@ async function getEspnTournament(): Promise<TournamentData> {
   const matches = normalizeEspnMatches(payload.events ?? []);
   const teams = teamsFromMatches(matches);
   const standings = computeStandings(teams, matches);
-  const bracket = buildBracketFromMatches(matches);
+  const hasProviderKnockout = hasKnockoutMatches(matches);
+  const bracket = buildBracket(matches, standings);
 
   return {
     teams,
@@ -160,7 +164,11 @@ async function getEspnTournament(): Promise<TournamentData> {
       configured: true,
       realtime: true,
       updatedAt: new Date().toISOString(),
-      warning: matches.length ? undefined : 'ESPN provider chưa trả về trận trong cửa sổ ngày hiện tại.'
+      warning: matches.length
+        ? hasProviderKnockout || !bracket.length
+          ? undefined
+          : 'ESPN chưa trả dữ liệu knock-out. Nhánh đấu đang được dự phóng từ bảng xếp hạng hiện có.'
+        : 'ESPN provider chưa trả về trận trong cửa sổ ngày hiện tại.'
     }
   };
 }
@@ -180,19 +188,25 @@ async function getFootballDataTournament(token: string): Promise<TournamentData>
   const teamMap = new Map(teams.map((team) => [team.code, team]));
   const matches = normalizeMatches(matchesPayload.matches ?? [], teamMap);
   const standings = computeStandings(teams, matches);
+  const hasProviderKnockout = hasKnockoutMatches(matches);
+  const bracket = buildBracket(matches, standings);
 
   return {
     teams,
     matches,
     standings,
-    bracket: [],
+    bracket,
     source: {
       provider: 'football-data',
       label: 'football-data.org',
       configured: true,
       realtime: true,
       updatedAt: new Date().toISOString(),
-      warning: matches.length ? undefined : 'Provider đã cấu hình nhưng chưa trả về trận World Cup 2026.'
+      warning: matches.length
+        ? hasProviderKnockout || !bracket.length
+          ? undefined
+          : 'Provider chưa trả dữ liệu knock-out. Nhánh đấu đang được dự phóng từ bảng xếp hạng hiện có.'
+        : 'Provider đã cấu hình nhưng chưa trả về trận World Cup 2026.'
     }
   };
 }
@@ -260,10 +274,81 @@ function teamsFromMatches(matches: Match[]): Team[] {
   });
 }
 
-function buildBracketFromMatches(matches: Match[]) {
+function hasKnockoutMatches(matches: Match[]) {
+  return matches.some((match) => match.stage !== 'Group');
+}
+
+function buildBracket(matches: Match[], standings: StandingRow[]): BracketSlot[] {
+  const providerBracket = buildBracketFromMatches(matches);
+  if (providerBracket.length) return providerBracket;
+  return buildProjectedKnockoutBracket(standings);
+}
+
+function buildBracketFromMatches(matches: Match[]): BracketSlot[] {
   return matches
     .filter((match) => match.stage !== 'Group')
     .map((match) => ({ round: match.stage, left: match.home, right: match.away, status: match.status === 'FT' ? 'Official slot' : 'Projected' }));
+}
+
+function buildProjectedKnockoutBracket(standings: StandingRow[]): BracketSlot[] {
+  const groups = Array.from(new Set(standings.map((item) => item.group))).filter(Boolean).sort();
+  if (!groups.length) return [];
+
+  const tableByGroup = new Map(groups.map((group) => [group, standings.filter((row) => row.group === group).sort(rankSort)]));
+  const winners = groups.map((group) => tableByGroup.get(group)?.[0]).filter(Boolean).map((row) => toSeed(row, `${row.group}1`));
+  const runnersUp = groups.map((group) => tableByGroup.get(group)?.[1]).filter(Boolean).map((row) => toSeed(row, `${row.group}2`));
+  const bestThird = groups
+    .map((group) => tableByGroup.get(group)?.[2])
+    .filter(Boolean)
+    .sort(rankSort)
+    .slice(0, 8)
+    .map((row, index) => toSeed(row, `3${row.group}#${index + 1}`));
+
+  const qualifiers = [...winners, ...runnersUp, ...bestThird];
+  if (qualifiers.length < 2) return [];
+
+  const highSeeds = [...winners, ...runnersUp.slice(0, Math.max(0, 16 - winners.length))];
+  const lowSeeds = [...runnersUp.slice(Math.max(0, 16 - winners.length)), ...bestThird].reverse();
+  const roundOf32: BracketSlot[] = [];
+
+  for (let index = 0; index < 16; index += 1) {
+    const left = highSeeds[index];
+    const right = takeOpponent(lowSeeds, left?.group);
+    roundOf32.push({
+      round: 'Round of 32',
+      left: left?.team ?? 'TBD',
+      right: right?.team ?? 'TBD',
+      status: left && right ? 'Projected' : 'Pending'
+    });
+  }
+
+  return [
+    ...roundOf32,
+    ...placeholderRound('Round of 16', 8, 'R32'),
+    ...placeholderRound('Quarter-final', 4, 'R16'),
+    ...placeholderRound('Semi-final', 2, 'QF'),
+    { round: 'Final', left: 'Winner SF-1', right: 'Winner SF-2', status: 'Pending' }
+  ];
+}
+
+function toSeed(row: StandingRow, slot: string): Seed {
+  return { team: row.team, group: row.group, slot };
+}
+
+function takeOpponent(candidates: Seed[], avoidGroup?: string): Seed | undefined {
+  if (!candidates.length) return undefined;
+  const preferredIndex = candidates.findIndex((candidate) => candidate.group !== avoidGroup);
+  const index = preferredIndex >= 0 ? preferredIndex : 0;
+  return candidates.splice(index, 1)[0];
+}
+
+function placeholderRound(round: string, count: number, previousRoundCode: string): BracketSlot[] {
+  return Array.from({ length: count }, (_, index) => ({
+    round,
+    left: `Winner ${previousRoundCode}-${index * 2 + 1}`,
+    right: `Winner ${previousRoundCode}-${index * 2 + 2}`,
+    status: 'Pending'
+  }));
 }
 
 function normalizeTeams(items: FootballDataTeam[]): Team[] {
