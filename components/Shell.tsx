@@ -1,11 +1,11 @@
 const navItems = [
-  ['/', 'Dashboard'],
-  ['/matches', 'Matches'],
-  ['/standings', 'Standings'],
-  ['/bracket', 'Bracket'],
-  ['/teams', 'Teams'],
-  ['/health', 'Health'],
-  ['/display', 'TV Mode']
+  ['/', 'Tong quan'],
+  ['/matches', 'Tran dau'],
+  ['/standings', 'Bang xep hang'],
+  ['/bracket', 'Nhanh dau'],
+  ['/teams', 'Doi tuyen'],
+  ['/health', 'Du lieu'],
+  ['/display', 'Man hinh TV']
 ];
 
 export function Shell({ children, title, subtitle, eyebrow = 'WorldCup Pulse 2026' }: { children: React.ReactNode; title: string; subtitle: string; eyebrow?: string }) {
