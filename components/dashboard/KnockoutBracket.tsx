@@ -3,7 +3,7 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { standings as fallbackStandings, teamLabel } from '@/lib/worldcup-data';
 import { fetchScoreboard, fetchStandings } from '../../utils/api';
-import type { ESPNStandingsResponse, Event, StatValue, StandingsEntry } from '../../types/espn';
+import type { ESPNStandingsResponse, Event, StatValue, StandingRow, StandingsEntry } from '../../types/espn';
 import { translateTeamName } from '../../utils/translations';
 import MatchCard from './MatchCard';
 import Loader from './Loader';
@@ -36,6 +36,8 @@ type RoundConfig = {
   title: string;
   matchCount: number;
 };
+
+type LocalStandingRow = typeof fallbackStandings[number];
 
 const ROUNDS: RoundConfig[] = [
   { id: 'round-of-32', title: 'Vòng 32 đội', matchCount: 16 },
@@ -157,9 +159,9 @@ function standingsToSeeds(data: ESPNStandingsResponse | null): TeamSeed[] {
     return { group: groupCode, rows };
   }).filter((group) => group.group && group.rows.length >= 3);
 
-  const winners = byGroup.map((group) => group.rows[0]).filter(Boolean);
-  const runnersUp = byGroup.map((group) => group.rows[1]).filter(Boolean);
-  const bestThird = byGroup.map((group) => group.rows[2]).filter(Boolean)
+  const winners = byGroup.map((group) => group.rows[0]).filter(isTeamSeed);
+  const runnersUp = byGroup.map((group) => group.rows[1]).filter(isTeamSeed);
+  const bestThird = byGroup.map((group) => group.rows[2]).filter(isTeamSeed)
     .sort((a, b) => b.points - a.points || b.goalDifference - a.goalDifference || b.goalsFor - a.goalsFor || a.team.localeCompare(b.team))
     .slice(0, 8);
 
@@ -180,13 +182,13 @@ function standingEntryToSeed(entry: StandingsEntry, group: string, index: number
 function fallbackSeeds(): TeamSeed[] {
   const groups = Array.from(new Set(fallbackStandings.map((row) => row.group))).sort();
   const tableByGroup = new Map(groups.map((group) => [group, fallbackStandings.filter((row) => row.group === group).sort(rankRows)]));
-  const winners = groups.map((group) => tableByGroup.get(group)?.[0]).filter(Boolean).map((row) => fallbackRowToSeed(row!));
-  const runnersUp = groups.map((group) => tableByGroup.get(group)?.[1]).filter(Boolean).map((row) => fallbackRowToSeed(row!));
-  const bestThird = groups.map((group) => tableByGroup.get(group)?.[2]).filter(Boolean).sort(rankRows).slice(0, 8).map((row) => fallbackRowToSeed(row!));
+  const winners = groups.map((group) => tableByGroup.get(group)?.[0]).filter(isLocalStandingRow).map(fallbackRowToSeed);
+  const runnersUp = groups.map((group) => tableByGroup.get(group)?.[1]).filter(isLocalStandingRow).map(fallbackRowToSeed);
+  const bestThird = groups.map((group) => tableByGroup.get(group)?.[2]).filter(isLocalStandingRow).sort(rankRows).slice(0, 8).map(fallbackRowToSeed);
   return [...winners, ...runnersUp, ...bestThird];
 }
 
-function fallbackRowToSeed(row: typeof fallbackStandings[number]): TeamSeed {
+function fallbackRowToSeed(row: LocalStandingRow): TeamSeed {
   return {
     team: teamLabel(row.team, false),
     group: row.group,
@@ -235,7 +237,15 @@ function takeOpponent(candidates: TeamSeed[], avoidGroup?: string): TeamSeed | u
   return candidates.splice(index, 1)[0];
 }
 
-function rankRows(a: typeof fallbackStandings[number], b: typeof fallbackStandings[number]) {
+function isTeamSeed(seed: TeamSeed | undefined): seed is TeamSeed {
+  return seed !== undefined;
+}
+
+function isLocalStandingRow(row: LocalStandingRow | undefined): row is LocalStandingRow {
+  return row !== undefined;
+}
+
+function rankRows(a: LocalStandingRow, b: LocalStandingRow) {
   return b.points - a.points || b.gd - a.gd || b.gf - a.gf || a.team.localeCompare(b.team);
 }
 
