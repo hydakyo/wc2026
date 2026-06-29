@@ -1,10 +1,16 @@
 import { MatchCard, MetricCard } from '@/components/Cards';
-import { tournamentSummary } from '@/lib/worldcup-data';
+import { DataSourceBanner } from '@/components/DataSourceBanner';
+import { getTournamentData, tournamentSummaryForData } from '@/lib/live-data';
 
-export default function DisplayPage() {
-  const summary = tournamentSummary();
+export const dynamic = 'force-dynamic';
+export const revalidate = 0;
+
+export default async function DisplayPage() {
+  const data = await getTournamentData();
+  const summary = tournamentSummaryForData(data);
   return (
     <main className="shell tv-shell">
+      <DataSourceBanner source={data.source} />
       <div className="eyebrow">Màn hình TV / NOC</div>
       <h1>WorldCup Pulse Live</h1>
       <section className="metric-grid">
@@ -14,7 +20,7 @@ export default function DisplayPage() {
         <MetricCard label="Tiếp theo" value={summary.upcoming[0]?.home ?? 'TBD'} hint="Trận sắp đá" />
       </section>
       <section className="grid live-grid">
-        {summary.live.map((match) => <MatchCard key={match.id} match={match} />)}
+        {(summary.live.length ? summary.live : summary.upcoming.slice(0, 4)).map((match) => <MatchCard key={match.id} match={match} />)}
       </section>
     </main>
   );

@@ -1,10 +1,15 @@
 import { NextResponse } from 'next/server';
-import { groups, tableFor, thirdPlaceRanking } from '@/lib/worldcup-data';
+import { getTournamentData, groupsForData, tableForData, thirdPlaceRankingForData } from '@/lib/live-data';
 
-export function GET() {
+export const dynamic = 'force-dynamic';
+export const revalidate = 0;
+
+export async function GET() {
+  const data = await getTournamentData();
   return NextResponse.json({
     generatedAt: new Date().toISOString(),
-    groups: Object.fromEntries(groups.map((group) => [group, tableFor(group)])),
-    thirdPlaceRanking: thirdPlaceRanking()
-  });
+    source: data.source,
+    groups: Object.fromEntries(groupsForData(data).map((group) => [group, tableForData(data, group)])),
+    thirdPlaceRanking: thirdPlaceRankingForData(data)
+  }, { headers: { 'Cache-Control': 'no-store' } });
 }
