@@ -2,14 +2,14 @@ import { MatchCard, MetricCard } from '@/components/Cards';
 import { DataSourceBanner } from '@/components/DataSourceBanner';
 import { QualifiedPanel, ThirdPlaceRace } from '@/components/StandingsViews';
 import { Shell } from '@/components/Shell';
-import { getTournamentData, tournamentSummaryForData } from '@/lib/live-data';
+import { getProductionTournamentData, tournamentSummaryForData } from '@/lib/production-data';
 import { formatKickoff } from '@/lib/worldcup-data';
 
 export const dynamic = 'force-dynamic';
 export const revalidate = 0;
 
 export default async function Home() {
-  const data = await getTournamentData();
+  const data = await getProductionTournamentData();
   const summary = tournamentSummaryForData(data);
   const spotlight = summary.live[0] ?? summary.upcoming[0] ?? summary.finished[0];
   const hasRealContent = data.matches.length > 0;
