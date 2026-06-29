@@ -1,9 +1,10 @@
-import { MatchCard, MetricCard } from '@/components/Cards';
+import { MatchCard } from '@/components/Cards';
 import { DataSourceBanner } from '@/components/DataSourceBanner';
 import { QualifiedPanel, ThirdPlaceRace } from '@/components/StandingsViews';
 import { Shell } from '@/components/Shell';
+import { groupsForData } from '@/lib/live-data';
 import { getProductionTournamentData, tournamentSummaryForData } from '@/lib/production-data';
-import { formatKickoff } from '@/lib/worldcup-data';
+import { teamLabel } from '@/lib/worldcup-data';
 
 export const dynamic = 'force-dynamic';
 export const revalidate = 0;
@@ -11,32 +12,12 @@ export const revalidate = 0;
 export default async function Home() {
   const data = await getProductionTournamentData();
   const summary = tournamentSummaryForData(data);
-  const spotlight = summary.live[0] ?? summary.upcoming[0] ?? summary.finished[0];
+  const groups = groupsForData(data);
   const hasRealContent = data.matches.length > 0;
 
   return (
-    <Shell title="WorldCup Pulse" subtitle="Trung tâm World Cup 2026 bằng tiếng Việt: lịch thi đấu, tỷ số, trạng thái trận và bức tranh đi tiếp trong một giao diện gọn, rõ, realtime-ready.">
+    <Shell title="World Cup 2026" subtitle="Lịch thi đấu, tỷ số, bảng xếp hạng và tình hình đi tiếp theo giờ Việt Nam.">
       <DataSourceBanner source={data.source} />
-
-      <section className="home-hero">
-        <div className="home-hero-copy">
-          <span className="live-dot">WORLD CUP 2026 LIVE HUB</span>
-          <h2>Lịch thi đấu, tỷ số và trạng thái giải đấu trong một màn hình sạch.</h2>
-          <p>Ưu tiên dữ liệu thật từ provider công khai, không hiển thị mock như dữ liệu chính thức. Khi provider lỗi, trạng thái nguồn sẽ được báo rõ.</p>
-          <div className="hero-actions"><a href="/matches">Xem lịch & tỷ số</a><a href="/standings">Xem bảng xếp hạng</a></div>
-        </div>
-        <div className="spotlight-card">
-          <div className="section-title"><h2>Trận nổi bật</h2><span>{spotlight ? 'Đang theo dõi' : 'Chờ dữ liệu'}</span></div>
-          {spotlight ? <MatchCard match={spotlight} /> : <p className="empty-copy">Provider chưa trả về trận trong cửa sổ hiện tại.</p>}
-        </div>
-      </section>
-
-      <section className="metric-grid compact">
-        <MetricCard label="Trận live" value={summary.liveCount} hint="Đang diễn ra" />
-        <MetricCard label="Tổng trận" value={data.matches.length} hint="Trong cửa sổ provider" />
-        <MetricCard label="Suất đi tiếp" value={summary.qualifiedCount} hint="Tính từ standings hiện có" />
-        <MetricCard label="Trận kế tiếp" value={summary.nextKickoff ? formatKickoff(summary.nextKickoff) : 'Chưa có'} hint="Giờ Việt Nam" />
-      </section>
 
       {!hasRealContent ? (
         <section className="card empty-state">
@@ -45,23 +26,51 @@ export default async function Home() {
         </section>
       ) : null}
 
-      <section className="home-grid">
-        <div className="home-main">
-          <div className="card">
-            <div className="section-title"><h2>Trận đang diễn ra</h2><a href="/matches">Tất cả trận</a></div>
-            {summary.live.length ? <div className="stack-list">{summary.live.slice(0, 4).map((match) => <MatchCard key={match.id} match={match} />)}</div> : <p className="empty-copy">Hiện không có trận live.</p>}
+      <section className="dashboard-layout">
+        <div className="dashboard-main">
+          <div className="section-heading">
+            <div>
+              <p className="section-kicker">Tất cả trận đấu</p>
+              <h2>Tổng quan trận đấu</h2>
+            </div>
+            <a className="text-link" href="/matches">Xem đầy đủ</a>
           </div>
 
-          <div className="card">
-            <div className="section-title"><h2>Sắp thi đấu</h2><a href="/matches">Lịch đầy đủ</a></div>
-            {summary.upcoming.length ? <div className="stack-list">{summary.upcoming.slice(0, 5).map((match) => <MatchCard key={match.id} match={match} dense />)}</div> : <p className="empty-copy">Chưa có trận sắp đá trong cửa sổ provider.</p>}
-          </div>
+          <section className="panel-block">
+            <div className="section-title"><h2>Đang diễn ra</h2><span>{summary.live.length} trận</span></div>
+            {summary.live.length ? <div className="stack-list">{summary.live.slice(0, 4).map((match) => <MatchCard key={match.id} match={match} />)}</div> : <div className="empty-panel">Chưa có trận đang diễn ra.</div>}
+          </section>
+
+          <section className="panel-block">
+            <div className="section-title"><h2>Sắp diễn ra</h2><span>{summary.upcoming.length} trận gần nhất</span></div>
+            {summary.upcoming.length ? <div className="stack-list">{summary.upcoming.slice(0, 5).map((match) => <MatchCard key={match.id} match={match} dense />)}</div> : <div className="empty-panel">Chưa có trận sắp diễn ra trong cửa sổ provider.</div>}
+          </section>
+
+          <section className="panel-block">
+            <div className="section-title"><h2>Kết quả gần nhất</h2><span>{summary.finished.length} trận</span></div>
+            {summary.finished.length ? <div className="stack-list">{summary.finished.slice(0, 4).map((match) => <MatchCard key={match.id} match={match} dense />)}</div> : <div className="empty-panel">Chưa có kết quả mới.</div>}
+          </section>
         </div>
 
-        <aside className="home-side">
-          <div className="card">
-            <div className="section-title"><h2>Kết quả gần nhất</h2><a href="/matches">Xem thêm</a></div>
-            {summary.finished.length ? <div className="stack-list">{summary.finished.slice(0, 4).map((match) => <MatchCard key={match.id} match={match} dense />)}</div> : <p className="empty-copy">Chưa có kết quả mới.</p>}
+        <aside className="dashboard-side">
+          <div className="card group-panel">
+            <div className="section-title"><h2>Bảng đấu</h2><span>{groups.length} bảng</span></div>
+            <div className="group-filter-grid link-grid">
+              <a className="active" href="/matches">Tất cả</a>
+              {groups.map((group) => <a href="/standings" key={group}>Bảng {group}</a>)}
+            </div>
+          </div>
+
+          <div className="card stat-panel">
+            <div className="section-title"><h2>Số liệu thống kê</h2><span>Theo bảng xếp hạng</span></div>
+            <table className="table stats-table">
+              <thead><tr><th>#</th><th>Đội</th><th className="num">Bàn thắng</th></tr></thead>
+              <tbody>
+                {summary.topAttack.slice(0, 5).map((row, index) => (
+                  <tr key={row.team}><td>{index + 1}</td><td><b>{teamLabel(row.team, false)}</b></td><td className="num"><b>{row.gf}</b></td></tr>
+                ))}
+              </tbody>
+            </table>
           </div>
         </aside>
       </section>
