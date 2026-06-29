@@ -1,23 +1,30 @@
 import { AnalyticsViews } from '@/components/AnalyticsViews';
 import { MatchCard, MetricCard } from '@/components/Cards';
+import { DataSourceBanner } from '@/components/DataSourceBanner';
 import { QualifiedPanel, StandingsGrid, ThirdPlaceRace } from '@/components/StandingsViews';
 import { BracketView } from '@/components/BracketView';
 import { Shell } from '@/components/Shell';
-import { formatKickoff, tournamentSummary } from '@/lib/worldcup-data';
+import { getTournamentData, tournamentSummaryForData } from '@/lib/live-data';
+import { formatKickoff } from '@/lib/worldcup-data';
 
-export default function Home() {
-  const summary = tournamentSummary();
-  const featuredMatch = summary.live[0];
+export const dynamic = 'force-dynamic';
+export const revalidate = 0;
+
+export default async function Home() {
+  const data = await getTournamentData();
+  const summary = tournamentSummaryForData(data);
+  const featuredMatch = summary.live[0] ?? summary.upcoming[0] ?? summary.finished[0];
   return (
     <Shell title="WorldCup Pulse" subtitle="Trung tâm theo dõi World Cup 2026 bằng tiếng Việt: lịch thi đấu, tỷ số, bảng xếp hạng, suất đi tiếp và nhánh knock-out.">
+      <DataSourceBanner source={data.source} />
       <section className="hero-panel">
         <div className="hero-copy">
           <span className="live-dot">LIVE CENTER</span>
           <h2>Theo dõi toàn bộ giải đấu trong một màn hình</h2>
-          <p>Dữ liệu đang dùng mock-provider để mô phỏng. Khi tích hợp API thật, giao diện này có thể dùng cho live score, NOC display hoặc trang public.</p>
+          <p>Dữ liệu được tải từ provider bóng đá ở phía server. Trang tự làm mới mỗi 30 giây.</p>
           <div className="hero-actions"><a href="/matches">Xem trận đấu</a><a href="/standings">Bảng xếp hạng</a></div>
         </div>
-        {featuredMatch ? <MatchCard match={featuredMatch} /> : null}
+        {featuredMatch ? <MatchCard match={featuredMatch} /> : <div className="card"><p className="subtle">Chưa có trận từ provider.</p></div>}
       </section>
 
       <section className="metric-grid">
@@ -31,9 +38,9 @@ export default function Home() {
         <div className="main-column">
           <div className="card">
             <div className="section-title"><h2>Trận đang diễn ra</h2><span>{summary.live.length} trận</span></div>
-            <div className="grid live-grid">{summary.live.map((match) => <MatchCard key={match.id} match={match} />)}</div>
+            {summary.live.length ? <div className="grid live-grid">{summary.live.map((match) => <MatchCard key={match.id} match={match} />)}</div> : <p className="subtle">Hiện không có trận live từ provider.</p>}
           </div>
-          <section className="grid two-col"><QualifiedPanel /><ThirdPlaceRace /></section>
+          <section className="grid two-col"><QualifiedPanel data={data} /><ThirdPlaceRace data={data} /></section>
         </div>
 
         <aside className="side-column">
@@ -42,9 +49,9 @@ export default function Home() {
         </aside>
       </section>
 
-      <AnalyticsViews />
-      <section className="card bracket-card"><div className="section-title"><h2>Nhánh đấu dự kiến</h2><a href="/bracket">Mở chi tiết</a></div><BracketView /></section>
-      <StandingsGrid />
+      <AnalyticsViews data={data} />
+      <section className="card bracket-card"><div className="section-title"><h2>Nhánh đấu</h2><a href="/bracket">Mở chi tiết</a></div><BracketView data={data} /></section>
+      <StandingsGrid data={data} />
     </Shell>
   );
 }
