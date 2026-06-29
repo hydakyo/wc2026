@@ -167,8 +167,8 @@ async function getEspnTournament(): Promise<TournamentData> {
       warning: matches.length
         ? hasProviderKnockout || !bracket.length
           ? undefined
-          : 'ESPN chưa trả dữ liệu knock-out. Nhánh đấu đang được dự phóng từ bảng xếp hạng hiện có.'
-        : 'ESPN provider chưa trả về trận trong cửa sổ ngày hiện tại.'
+          : 'ESPN chưa trả dữ liệu knock-out hoặc standings đầy đủ. Nhánh đấu đang được dự phóng từ dữ liệu cục bộ.'
+        : 'ESPN provider chưa trả về trận trong cửa sổ ngày hiện tại. Nhánh knock-out nếu có chỉ là khung dự phóng.'
     }
   };
 }
@@ -205,8 +205,8 @@ async function getFootballDataTournament(token: string): Promise<TournamentData>
       warning: matches.length
         ? hasProviderKnockout || !bracket.length
           ? undefined
-          : 'Provider chưa trả dữ liệu knock-out. Nhánh đấu đang được dự phóng từ bảng xếp hạng hiện có.'
-        : 'Provider đã cấu hình nhưng chưa trả về trận World Cup 2026.'
+          : 'Provider chưa trả dữ liệu knock-out hoặc standings đầy đủ. Nhánh đấu đang được dự phóng từ dữ liệu cục bộ.'
+        : 'Provider đã cấu hình nhưng chưa trả về trận World Cup 2026. Nhánh knock-out nếu có chỉ là khung dự phóng.'
     }
   };
 }
@@ -240,7 +240,7 @@ function normalizeEspnMatches(events: EspnEvent[]): Match[] {
     return {
       id: String(event.id ?? `${homeCode}-${awayCode}-${event.date ?? Math.random()}`),
       stage,
-      group: extractGroup(competition?.altGameNote ?? event.season?.slug),
+      group: extractGroup(competition?.altGameNote ?? event.season?.slug) ?? groupFromTeamCodes(homeCode, awayCode),
       home: homeCode,
       away: awayCode,
       homeScore: parseScore(home?.score),
@@ -291,6 +291,12 @@ function buildBracketFromMatches(matches: Match[]): BracketSlot[] {
 }
 
 function buildProjectedKnockoutBracket(standings: StandingRow[]): BracketSlot[] {
+  const bracket = buildProjectedKnockoutBracketFromRows(standings);
+  if (hasCompleteRoundOf32(bracket)) return bracket;
+  return buildProjectedKnockoutBracketFromRows(mockStandings);
+}
+
+function buildProjectedKnockoutBracketFromRows(standings: StandingRow[]): BracketSlot[] {
   const groups = Array.from(new Set(standings.map((item) => item.group))).filter(Boolean).sort();
   if (!groups.length) return [];
 
@@ -329,6 +335,11 @@ function buildProjectedKnockoutBracket(standings: StandingRow[]): BracketSlot[] 
     ...placeholderRound('Semi-final', 2, 'QF'),
     { round: 'Final', left: 'Winner SF-1', right: 'Winner SF-2', status: 'Pending' }
   ];
+}
+
+function hasCompleteRoundOf32(bracket: BracketSlot[]) {
+  const roundOf32 = bracket.filter((item) => item.round === 'Round of 32');
+  return roundOf32.length === 16 && roundOf32.every((item) => item.left !== 'TBD' && item.right !== 'TBD');
 }
 
 function isStandingRow(row: StandingRow | undefined): row is StandingRow {
@@ -370,7 +381,7 @@ function normalizeMatches(items: FootballDataMatch[], teamMap: Map<string, Team>
     const home = safeCode(item.homeTeam?.tla ?? item.homeTeam?.shortName ?? item.homeTeam?.name);
     const away = safeCode(item.awayTeam?.tla ?? item.awayTeam?.shortName ?? item.awayTeam?.name);
     const score = item.score?.fullTime ?? item.score?.regularTime ?? item.score?.halfTime;
-    const group = extractGroup(item.group) ?? teamMap.get(home)?.group;
+    const group = extractGroup(item.group) ?? groupFromTeamCodes(home, away) ?? teamMap.get(home)?.group;
     return { id: String(item.id ?? `${home}-${away}-${item.utcDate ?? Math.random()}`), stage: normalizeStage(item.stage), group, home, away, homeScore: score?.home ?? null, awayScore: score?.away ?? null, status: mapFootballDataStatus(item.status), kickoff: item.utcDate ?? new Date().toISOString(), venue: 'Chưa cập nhật' };
   });
 }
@@ -379,7 +390,7 @@ function computeStandings(teams: Team[], matches: Match[]): StandingRow[] {
   const rows = new Map<string, StandingRow>();
   for (const team of teams) if (team.group && team.group !== 'TBD') rows.set(team.code, row(team.group, team.code));
   for (const match of matches) {
-    if (!match.group || match.homeScore === null || match.awayScore === null) continue;
+    if (match.stage !== 'Group' || !match.group || match.homeScore === null || match.awayScore === null) continue;
     if (!['FT', 'LIVE', 'HT'].includes(match.status)) continue;
     const home = ensureRow(rows, match.group, match.home);
     const away = ensureRow(rows, match.group, match.away);
@@ -401,6 +412,7 @@ function parseScore(value?: string) { if (value === undefined || value === '') r
 function extractMinute(clock?: string) { if (!clock) return undefined; const match = clock.match(/\d+/); return match ? Number(match[0]) : undefined; }
 function formatEspnDetail(detail: NonNullable<EspnCompetition['details']>[number]) { const minute = detail.clock?.displayValue ?? ''; const label = detail.type?.text ?? ''; const athlete = detail.athletesInvolved?.[0]?.displayName ?? ''; return [minute, athlete, label].filter(Boolean).join(' · '); }
 function extractGroup(group?: string | null): string | undefined { if (!group) return undefined; const match = group.match(/[A-L]$/i) ?? group.match(/GROUP_([A-L])/i); return match?.[1]?.toUpperCase(); }
+function groupFromTeamCodes(home: string, away: string): string | undefined { const teamMap = new Map(mockTeams.map((team) => [team.code, team])); const homeGroup = teamMap.get(home)?.group; const awayGroup = teamMap.get(away)?.group; if (homeGroup && homeGroup !== 'TBD' && homeGroup === awayGroup) return homeGroup; return undefined; }
 function normalizeStage(stage?: string): string { if (!stage) return 'Group'; const value = stage.toUpperCase(); if (value.includes('GROUP')) return 'Group'; if (value.includes('ROUND OF 32') || value.includes('ROUND-OF-32') || value.includes('LAST_32')) return 'Round of 32'; if (value.includes('ROUND OF 16') || value.includes('RD OF 16') || value.includes('LAST_16')) return 'Round of 16'; if (value.includes('QUARTER')) return 'Quarter-final'; if (value.includes('SEMI')) return 'Semi-final'; if (value.includes('FINAL')) return 'Final'; if (value.includes('3RD')) return '3rd-Place Match'; return stage; }
 function mapFootballDataStatus(status?: string): MatchStatus { if (status === 'FINISHED') return 'FT'; if (status === 'PAUSED') return 'HT'; if (['IN_PLAY', 'LIVE'].includes(status ?? '')) return 'LIVE'; return 'SCHEDULED'; }
 function mapEspnStatus(state?: string, completed?: boolean): MatchStatus { if (completed || state === 'post') return 'FT'; if (state === 'in') return 'LIVE'; return 'SCHEDULED'; }
