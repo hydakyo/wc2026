@@ -16,28 +16,27 @@ export function StatusBadge({ status }: { status: string }) {
   return <span className={`status ${key}`}>{statusLabel(status)}</span>;
 }
 
+function scoreText(match: Match) {
+  if (match.homeScore === null || match.awayScore === null) return '- - -';
+  return `${match.homeScore} - ${match.awayScore}`;
+}
+
 export function MatchCard({ match, dense = false }: { match: Match; dense?: boolean }) {
   return (
     <article className={`match-card ${dense ? 'dense' : ''}`}>
       <div className="match-meta">
         <span>{stageLabel(match.stage)}{match.group ? ` · Bảng ${match.group}` : ''}</span>
-        <StatusBadge status={match.status} />
+        <span>{match.minute ? `${match.minute}'` : formatKickoff(match.kickoff)}</span>
       </div>
 
       <div className="scoreline">
-        <div className="club home">
-          <span>{teamLabel(match.home)}</span>
-          <strong>{match.homeScore ?? '-'}</strong>
-        </div>
-        <span className="divider">vs</span>
-        <div className="club away">
-          <strong>{match.awayScore ?? '-'}</strong>
-          <span>{teamLabel(match.away)}</span>
-        </div>
+        <div className="club home"><span>{teamLabel(match.home, false)}</span></div>
+        <strong className="score-pill">{scoreText(match)}</strong>
+        <div className="club away"><span>{teamLabel(match.away, false)}</span></div>
       </div>
 
       <div className="match-foot">
-        <span>{match.minute ? `${match.minute}'` : formatKickoff(match.kickoff)}</span>
+        <StatusBadge status={match.status} />
         <span>{match.venue}</span>
       </div>
 
