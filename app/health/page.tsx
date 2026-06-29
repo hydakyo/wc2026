@@ -1,17 +1,23 @@
+import { DataSourceBanner } from '@/components/DataSourceBanner';
 import { Shell } from '@/components/Shell';
-import { tournamentSummary } from '@/lib/worldcup-data';
+import { getTournamentData, tournamentSummaryForData } from '@/lib/live-data';
 
-export default function HealthPage() {
-  const summary = tournamentSummary();
+export const dynamic = 'force-dynamic';
+export const revalidate = 0;
+
+export default async function HealthPage() {
+  const data = await getTournamentData();
+  const summary = tournamentSummaryForData(data);
   return (
-    <Shell title="Trạng thái dữ liệu" subtitle="Trang vận hành cho độ tươi dữ liệu, trạng thái mock-provider và mức sẵn sàng tích hợp production.">
+    <Shell title="Trạng thái dữ liệu" subtitle="Trang vận hành cho độ tươi dữ liệu, provider và mức sẵn sàng tích hợp production.">
+      <DataSourceBanner source={data.source} />
       <section className="metric-grid">
-        <div className="card metric"><span>Chế độ nguồn dữ liệu</span><strong>Mock</strong><em>Sẵn sàng thay bằng API thật</em></div>
-        <div className="card metric"><span>Trận đang đá</span><strong>{summary.liveCount}</strong><em>Sẵn sàng polling phía frontend</em></div>
-        <div className="card metric"><span>Route</span><strong>8</strong><em>Dashboard + API</em></div>
-        <div className="card metric"><span>Múi giờ</span><strong>ICT</strong><em>Asia/Ho_Chi_Minh</em></div>
+        <div className="metric-card"><span>Nguồn dữ liệu</span><strong>{data.source.label}</strong><em>{data.source.configured ? 'Đã cấu hình' : 'Chưa cấu hình'}</em></div>
+        <div className="metric-card"><span>Trận đang đá</span><strong>{summary.liveCount}</strong><em>Tự làm mới mỗi 30 giây</em></div>
+        <div className="metric-card"><span>Tổng trận</span><strong>{data.matches.length}</strong><em>Provider trả về</em></div>
+        <div className="metric-card"><span>Múi giờ</span><strong>ICT</strong><em>Asia/Ho_Chi_Minh</em></div>
       </section>
-      <div className="card"><div className="section-title"><h2>Checklist production</h2><span>Trước khi public</span></div><p>Cần tích hợp provider adapter phía server, thêm cache, bảo vệ API key, cảnh báo dữ liệu cũ và xác thực tie-breaker chính thức qua nguồn dữ liệu.</p></div>
+      <div className="card"><div className="section-title"><h2>Biến môi trường cần cấu hình</h2><span>Vercel / local</span></div><p><code>FOOTBALL_DATA_API_KEY</code>, <code>FOOTBALL_DATA_COMPETITION=WC</code>, <code>FOOTBALL_DATA_SEASON=2026</code>.</p></div>
     </Shell>
   );
 }
