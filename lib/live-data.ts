@@ -27,7 +27,7 @@ export type TournamentData = {
 };
 
 type BracketSlot = typeof mockBracket[number];
-type Seed = { team: string; group: string; slot: string };
+type Seed = { team: string; group: string };
 
 type FootballDataTeam = {
   id?: number;
@@ -295,14 +295,14 @@ function buildProjectedKnockoutBracket(standings: StandingRow[]): BracketSlot[] 
   if (!groups.length) return [];
 
   const tableByGroup = new Map(groups.map((group) => [group, standings.filter((row) => row.group === group).sort(rankSort)]));
-  const winners = groups.map((group) => tableByGroup.get(group)?.[0]).filter(Boolean).map((row) => toSeed(row, `${row.group}1`));
-  const runnersUp = groups.map((group) => tableByGroup.get(group)?.[1]).filter(Boolean).map((row) => toSeed(row, `${row.group}2`));
+  const winners = groups.map((group) => tableByGroup.get(group)?.[0]).filter(isStandingRow).map(toSeed);
+  const runnersUp = groups.map((group) => tableByGroup.get(group)?.[1]).filter(isStandingRow).map(toSeed);
   const bestThird = groups
     .map((group) => tableByGroup.get(group)?.[2])
-    .filter(Boolean)
+    .filter(isStandingRow)
     .sort(rankSort)
     .slice(0, 8)
-    .map((row, index) => toSeed(row, `3${row.group}#${index + 1}`));
+    .map(toSeed);
 
   const qualifiers = [...winners, ...runnersUp, ...bestThird];
   if (qualifiers.length < 2) return [];
@@ -331,8 +331,12 @@ function buildProjectedKnockoutBracket(standings: StandingRow[]): BracketSlot[] 
   ];
 }
 
-function toSeed(row: StandingRow, slot: string): Seed {
-  return { team: row.team, group: row.group, slot };
+function isStandingRow(row: StandingRow | undefined): row is StandingRow {
+  return row !== undefined;
+}
+
+function toSeed(row: StandingRow): Seed {
+  return { team: row.team, group: row.group };
 }
 
 function takeOpponent(candidates: Seed[], avoidGroup?: string): Seed | undefined {
