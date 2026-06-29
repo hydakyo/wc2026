@@ -1,11 +1,11 @@
 import { NextResponse } from 'next/server';
-import { getTournamentData, groupsForData, tableForData, thirdPlaceRankingForData } from '@/lib/live-data';
+import { getProductionTournamentData, groupsForData, tableForData, thirdPlaceRankingForData } from '@/lib/production-data';
 
 export const dynamic = 'force-dynamic';
 export const revalidate = 0;
 
 export async function GET() {
-  const data = await getTournamentData();
+  const data = await getProductionTournamentData();
   return NextResponse.json({
     generatedAt: new Date().toISOString(),
     source: data.source,
