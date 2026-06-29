@@ -1,6 +1,10 @@
 import { NextResponse } from 'next/server';
-import { matches } from '@/lib/worldcup-data';
+import { getTournamentData } from '@/lib/live-data';
 
-export function GET() {
-  return NextResponse.json({ generatedAt: new Date().toISOString(), matches });
+export const dynamic = 'force-dynamic';
+export const revalidate = 0;
+
+export async function GET() {
+  const data = await getTournamentData();
+  return NextResponse.json({ generatedAt: new Date().toISOString(), source: data.source, matches: data.matches }, { headers: { 'Cache-Control': 'no-store' } });
 }
