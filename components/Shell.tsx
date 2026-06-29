@@ -2,12 +2,11 @@ import { AutoRefresh } from './AutoRefresh';
 
 const navItems = [
   ['/', 'Tổng quan'],
-  ['/matches', 'Trận đấu'],
+  ['/matches', 'Lịch thi đấu'],
   ['/standings', 'Bảng xếp hạng'],
-  ['/bracket', 'Nhánh đấu'],
+  ['/bracket', 'Vòng Knockout'],
   ['/teams', 'Đội tuyển'],
-  ['/health', 'Dữ liệu'],
-  ['/display', 'Màn hình TV']
+  ['/health', 'Dữ liệu']
 ];
 
 export function Shell({ children, title, subtitle, eyebrow = 'WorldCup Pulse 2026' }: { children: React.ReactNode; title: string; subtitle: string; eyebrow?: string }) {
