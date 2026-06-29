@@ -1,28 +1,27 @@
 import { AutoRefresh } from './AutoRefresh';
+import { NavLinks } from './NavLinks';
 
-const navItems = [
-  ['/', 'Tổng quan'],
-  ['/matches', 'Trận đấu'],
-  ['/standings', 'Bảng xếp hạng'],
-  ['/bracket', 'Nhánh đấu'],
-  ['/teams', 'Đội tuyển'],
-  ['/health', 'Dữ liệu'],
-  ['/display', 'Màn hình TV']
-];
-
-export function Shell({ children, title, subtitle, eyebrow = 'WorldCup Pulse 2026' }: { children: React.ReactNode; title: string; subtitle: string; eyebrow?: string }) {
+export function Shell({
+  children,
+  title,
+  subtitle,
+  eyebrow = 'World Cup 2026'
+}: {
+  children: React.ReactNode;
+  title: string;
+  subtitle: string;
+  eyebrow?: string;
+}) {
   return (
     <main className="shell">
       <AutoRefresh />
-      <header className="hero">
-        <div>
-          <div className="eyebrow">{eyebrow}</div>
+      <header className="site-header">
+        <div className="brand-block">
+          <span className="eyebrow">{eyebrow}</span>
           <h1>{title}</h1>
           <p>{subtitle}</p>
         </div>
-        <nav className="nav">
-          {navItems.map(([href, label]) => <a key={href} href={href}>{label}</a>)}
-        </nav>
+        <NavLinks />
       </header>
       {children}
     </main>
