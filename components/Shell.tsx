@@ -16,12 +16,14 @@ export function Shell({
     <main className="shell">
       <AutoRefresh />
       <header className="site-header">
-        <div className="brand-block">
-          <span className="eyebrow">{eyebrow}</span>
-          <h1>{title}</h1>
-          <p>{subtitle}</p>
+        <div className="header-topline">
+          <div className="brand-block">
+            <span className="eyebrow">{eyebrow}</span>
+            <h1>{title}</h1>
+          </div>
+          <NavLinks />
         </div>
-        <NavLinks />
+        <p>{subtitle}</p>
       </header>
       {children}
     </main>
