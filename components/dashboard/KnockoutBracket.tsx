@@ -307,7 +307,7 @@ function extractGroupCode(value: string) {
 
 function isEventInRound(event: Event, roundId: string) {
   const slug = normalizeText(event.season?.slug || '');
-  const name = normalizeText(`${event.name || ''} ${event.shortName || ''} ${event.status?.type?.description || ''}`);
+  const name = normalizeText(`${event.name || ''} ${event.shortName || ''}`);
   const haystack = `${slug} ${name}`;
   const isQuarterFinal = includesAny(haystack, ['quarterfinal', 'quarterfinals']);
   const isSemiFinal = includesAny(haystack, ['semifinal', 'semifinals']);
