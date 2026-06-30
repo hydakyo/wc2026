@@ -2,7 +2,6 @@
 import React, { useEffect, useState, useCallback } from 'react';
 import { fetchScoreboard } from '../../utils/api';
 import type { ESPNScoreboardResponse } from '../../types/espn';
-import type { TournamentData } from '@/lib/production-data';
 import MatchList from './MatchList';
 import Loader from './Loader';
 import Tabs from './Tabs';
@@ -11,11 +10,7 @@ import TopStats from './TopStats';
 import KnockoutBracket from './KnockoutBracket';
 import '../../styles/Dashboard.css';
 
-type DashboardProps = {
-  tournamentData: TournamentData;
-};
-
-const Dashboard: React.FC<DashboardProps> = ({ tournamentData }) => {
+const Dashboard: React.FC = () => {
   const [data, setData] = useState<ESPNScoreboardResponse | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
@@ -47,7 +42,7 @@ const Dashboard: React.FC<DashboardProps> = ({ tournamentData }) => {
   const renderContent = () => {
     if (activeTab === 'standings') return <Standings />;
     if (activeTab === 'stats') return <TopStats />;
-    if (activeTab === 'bracket') return <KnockoutBracket tournamentData={tournamentData} />;
+    if (activeTab === 'bracket') return <KnockoutBracket />;
 
     // Default to 'matches'
     if (loading) return <Loader message="Đang tải dữ liệu World Cup..." />;
@@ -81,3 +76,5 @@ const Dashboard: React.FC<DashboardProps> = ({ tournamentData }) => {
 };
 
 export default Dashboard;
+
+
