@@ -309,12 +309,14 @@ function isEventInRound(event: Event, roundId: string) {
   const slug = normalizeText(event.season?.slug || '');
   const name = normalizeText(`${event.name || ''} ${event.shortName || ''} ${event.status?.type?.description || ''}`);
   const haystack = `${slug} ${name}`;
+  const isQuarterFinal = includesAny(haystack, ['quarterfinal', 'quarterfinals']);
+  const isSemiFinal = includesAny(haystack, ['semifinal', 'semifinals']);
 
   if (roundId === 'round-of-32') return includesAny(haystack, ['roundof32', 'round32', 'last32']);
   if (roundId === 'round-of-16') return includesAny(haystack, ['roundof16', 'round16', 'last16']);
-  if (roundId === 'quarterfinals') return includesAny(haystack, ['quarterfinal', 'quarterfinals']);
-  if (roundId === 'semifinals') return includesAny(haystack, ['semifinal', 'semifinals']);
-  if (roundId === 'final') return includesAny(haystack, ['final']) && !includesAny(haystack, ['semifinal', 'thirdplace', '3rdplace']);
+  if (roundId === 'quarterfinals') return isQuarterFinal;
+  if (roundId === 'semifinals') return isSemiFinal;
+  if (roundId === 'final') return includesAny(haystack, ['final']) && !isQuarterFinal && !isSemiFinal && !includesAny(haystack, ['thirdplace', '3rdplace']);
   return false;
 }
 
