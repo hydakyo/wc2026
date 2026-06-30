@@ -1,8 +1,16 @@
 .dashboard-container {
-  max-width: 1200px;
+  width: min(100%, calc(100vw - 24px));
+  max-width: 1500px;
   margin: 0 auto;
   padding: var(--spacing-xl) var(--spacing-lg);
   flex: 1;
+}
+
+@media (max-width: 900px) {
+  .dashboard-container {
+    width: 100%;
+    padding-inline: var(--spacing-sm);
+  }
 }
 
 .dashboard-error {

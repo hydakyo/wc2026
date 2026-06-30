@@ -1,10 +1,12 @@
 .stats-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+  grid-template-columns: repeat(5, minmax(0, 1fr));
   gap: var(--spacing-lg);
+  align-items: start;
 }
 
 .stats-card {
+  min-width: 0;
   background: var(--card-bg);
   border: 1px solid var(--card-border);
   border-radius: 12px;
@@ -73,12 +75,16 @@
 
 .leader-info {
   flex: 1;
+  min-width: 0;
 }
 
 .leader-name {
   font-weight: 600;
   font-size: 1rem;
   color: var(--text-primary);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .leader-team {
@@ -88,6 +94,10 @@
   align-items: center;
   gap: 4px;
   margin-top: 2px;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .tiny-logo {
@@ -95,8 +105,77 @@
   height: 14px;
 }
 
+.team-leader-logo {
+  border-radius: 8px;
+}
+
 .leader-value {
   font-size: 1.5rem;
   font-weight: 700;
   color: var(--accent-cyan);
+  display: flex;
+  align-items: baseline;
+  gap: 3px;
+  font-variant-numeric: tabular-nums;
+}
+
+.defense-value {
+  color: #0f766e;
+}
+
+.leader-unit {
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: var(--text-secondary);
+}
+
+@media (max-width: 1180px) {
+  .stats-grid {
+    gap: var(--spacing-md);
+  }
+
+  .category-title {
+    padding: 10px 12px;
+    font-size: 0.96rem;
+  }
+
+  .leader-item {
+    padding: 10px 10px;
+  }
+
+  .leader-rank {
+    width: 24px;
+    font-size: 1rem;
+  }
+
+  .leader-img,
+  .leader-img-placeholder {
+    width: 32px;
+    height: 32px;
+    margin-right: 8px;
+  }
+
+  .leader-name {
+    font-size: 0.88rem;
+  }
+
+  .leader-team {
+    font-size: 0.72rem;
+  }
+
+  .leader-value {
+    font-size: 1.25rem;
+  }
+}
+
+@media (max-width: 980px) {
+  .stats-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 620px) {
+  .stats-grid {
+    grid-template-columns: 1fr;
+  }
 }

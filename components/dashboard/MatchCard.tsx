@@ -1,6 +1,7 @@
 "use client";
 import React from 'react';
-import type { Event } from '../../types/espn';
+import { teams as fallbackTeams } from '@/lib/worldcup-data';
+import type { Competitor, Event, Team } from '../../types/espn';
 import { translateTeamName, translateMatchStatus } from '../../utils/translations';
 import '../../styles/MatchCard.css';
 
@@ -42,28 +43,52 @@ const MatchCard: React.FC<MatchCardProps> = ({ match }) => {
       </div>
 
       <div className="match-teams">
-        {/* Home Team */}
-        <div className={`team ${homeTeam.winner ? 'winner' : ''}`}>
-          <img src={homeTeam.team.logo} alt={homeTeam.team.displayName} className="team-logo" />
-          <div className="team-info">
-            <span className="team-name">{translateTeamName(homeTeam.team.shortDisplayName)}</span>
-          </div>
-          <span className="team-score">{isPre ? '-' : homeTeam.score}</span>
-        </div>
-
-        {/* Away Team */}
-        <div className={`team ${awayTeam.winner ? 'winner' : ''}`}>
-          <img src={awayTeam.team.logo} alt={awayTeam.team.displayName} className="team-logo" />
-          <div className="team-info">
-            <span className="team-name">{translateTeamName(awayTeam.team.shortDisplayName)}</span>
-          </div>
-          <span className="team-score">{isPre ? '-' : awayTeam.score}</span>
-        </div>
+        <TeamRow competitor={homeTeam} isPre={isPre} />
+        <TeamRow competitor={awayTeam} isPre={isPre} />
       </div>
     </div>
   );
 };
 
+function TeamRow({ competitor, isPre }: { competitor: Competitor; isPre: boolean }) {
+  const display = teamDisplay(competitor.team);
+
+  return (
+    <div className={`team ${competitor.winner ? 'winner' : ''}`}>
+      {display.logo ? (
+        <img src={display.logo} alt={display.name} className="team-logo" />
+      ) : display.flag ? (
+        <span className="team-flag" aria-hidden="true">{display.flag}</span>
+      ) : (
+        <span className="team-slot-placeholder" aria-hidden="true">TBD</span>
+      )}
+      <div className="team-info">
+        <span className="team-name">{display.name}</span>
+      </div>
+      <span className="team-score">{isPre ? '-' : competitor.score}</span>
+    </div>
+  );
+}
+
+function teamDisplay(team: Team) {
+  const fallback = fallbackTeams.find((item) => item.code === team.abbreviation);
+  return {
+    name: formatTeamName(team),
+    logo: team.logos?.[0]?.href || team.logo || undefined,
+    flag: fallback?.flag
+  };
+}
+
+function formatTeamName(team: Team) {
+  const rawName = team.shortDisplayName || team.displayName || team.name || team.abbreviation;
+  const shortPlaceholder = rawName.match(/^(?:RD|R)(\d+)\s*W(\d+)$/i);
+  const longPlaceholder = rawName.match(/Round of (\d+) (\d+) Winner/i);
+
+  if (shortPlaceholder) return `Thắng R${shortPlaceholder[1]}-${shortPlaceholder[2]}`;
+  if (longPlaceholder) return `Thắng R${longPlaceholder[1]}-${longPlaceholder[2]}`;
+  if (!team.logo && /winner/i.test(rawName)) return 'Chưa xác định';
+
+  return translateTeamName(rawName);
+}
+
 export default MatchCard;
-
-

@@ -24,15 +24,17 @@
 
 .bracket-stages {
   display: flex;
-  gap: 40px;
-  min-width: max-content;
-  padding: 20px;
+  gap: clamp(14px, 1.8vw, 28px);
+  min-width: 100%;
+  padding: clamp(10px, 1.4vw, 18px);
 }
 
 .bracket-round {
   display: flex;
   flex-direction: column;
-  width: 260px;
+  flex: 1 1 0;
+  min-width: 190px;
+  max-width: 250px;
 }
 
 .round-title {
@@ -107,13 +109,34 @@
   min-height: 28px;
   display: flex;
   align-items: center;
-  justify-content: center;
+  justify-content: flex-start;
+  gap: 8px;
+  text-align: left;
 }
 
 .mock-team span {
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+}
+
+.mock-team-logo,
+.mock-team-flag {
+  width: 22px;
+  height: 22px;
+  flex: 0 0 22px;
+}
+
+.mock-team-logo {
+  object-fit: contain;
+}
+
+.mock-team-flag {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1rem;
+  line-height: 1;
 }
 
 .mock-divider {
@@ -136,8 +159,8 @@
 
 .connector-line {
   position: absolute;
-  right: -20px;
-  width: 20px;
+  right: calc(clamp(14px, 1.8vw, 28px) / -2);
+  width: calc(clamp(14px, 1.8vw, 28px) / 2);
   border-right: 2px solid var(--accent-cyan);
   border-color: rgba(2, 132, 199, 0.3);
 }
@@ -164,8 +187,18 @@
 .bracket-round + .bracket-round .bracket-match-wrapper::before {
   content: '';
   position: absolute;
-  left: -20px;
+  left: calc(clamp(14px, 1.8vw, 28px) / -2);
   top: 50%;
-  width: 20px;
+  width: calc(clamp(14px, 1.8vw, 28px) / 2);
   border-top: 2px solid rgba(2, 132, 199, 0.3);
+}
+
+@media (max-width: 1180px) {
+  .bracket-stages {
+    min-width: 1040px;
+  }
+
+  .bracket-round {
+    min-width: 180px;
+  }
 }

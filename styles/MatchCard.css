@@ -72,6 +72,32 @@
   margin-right: var(--spacing-sm);
 }
 
+.team-flag,
+.team-slot-placeholder {
+  width: 32px;
+  height: 32px;
+  margin-right: var(--spacing-sm);
+  flex: 0 0 32px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.team-flag {
+  font-size: 1.35rem;
+  line-height: 1;
+}
+
+.team-slot-placeholder {
+  border-radius: 6px;
+  border: 1px dashed rgba(2, 132, 199, 0.28);
+  color: var(--accent-cyan);
+  background: rgba(2, 132, 199, 0.08);
+  font-size: 0.58rem;
+  font-weight: 800;
+  letter-spacing: 0;
+}
+
 .team-info {
   flex: 1;
   display: flex;
