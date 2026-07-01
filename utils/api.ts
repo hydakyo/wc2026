@@ -2,8 +2,8 @@ import type { ESPNScoreboardResponse, ESPNStandingsResponse, ESPNStatsResponse }
 
 const ESPN_BASE = "https://site.api.espn.com/apis/site/v2/sports/soccer/fifa.world";
 const ESPN_V2_BASE = "https://site.api.espn.com/apis/v2/sports/soccer/fifa.world";
-const SCOREBOARD_LOOKBACK_DAYS = 2;
-const SCOREBOARD_LOOKAHEAD_DAYS = 10;
+const SCOREBOARD_LOOKBACK_DAYS = 14;
+const SCOREBOARD_LOOKAHEAD_DAYS = 30;
 
 const compactDate = (date: Date): string => {
   const year = date.getUTCFullYear();
