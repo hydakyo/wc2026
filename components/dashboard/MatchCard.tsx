@@ -27,11 +27,8 @@ const MatchCard: React.FC<MatchCardProps> = ({ match }) => {
 
   const formatTime = () => {
     if (isLive) return <span className="live-time"><span className="live-indicator"></span>{status.displayClock}</span>;
-    if (isPost) return 'Kết thúc';
-    if (isPre) {
-      const date = new Date(match.date);
-      return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-    }
+    if (isPost) return `Kết thúc · ${formatMatchDate(match.date)}`;
+    if (isPre) return formatKickoff(match.date);
     return translateMatchStatus(status.type.shortDetail || status.type.description);
   };
 
@@ -89,6 +86,29 @@ function formatTeamName(team: Team) {
   if (!team.logo && /winner/i.test(rawName)) return 'Chưa xác định';
 
   return translateTeamName(rawName);
+}
+
+function formatKickoff(value: string) {
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return '--/-- --:--';
+
+  return date.toLocaleString('vi-VN', {
+    day: '2-digit',
+    month: '2-digit',
+    hour: '2-digit',
+    minute: '2-digit',
+    hour12: false
+  }).replace(',', '');
+}
+
+function formatMatchDate(value: string) {
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return '--/--';
+
+  return date.toLocaleDateString('vi-VN', {
+    day: '2-digit',
+    month: '2-digit'
+  });
 }
 
 export default MatchCard;
