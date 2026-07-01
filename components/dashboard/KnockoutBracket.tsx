@@ -160,17 +160,17 @@ function getActualSlotsForRound(events: Event[], roundId: string, matchCount: nu
   if (!order?.length) return matches.sort(compareEventKickoff).slice(0, matchCount);
 
   const slots: Array<Event | undefined> = Array.from({ length: matchCount });
-  const byId = new Map(matches.map((event) => [event.id, event]));
+  const byId = new Map(matches.map((event) => [String(event.id), event]));
   const used = new Set<string>();
 
   order.slice(0, matchCount).forEach((eventId, index) => {
-    const event = byId.get(eventId);
+    const event = byId.get(String(eventId));
     if (!event) return;
     slots[index] = event;
-    used.add(event.id);
+    used.add(String(event.id));
   });
 
-  const remaining = matches.filter((event) => !used.has(event.id)).sort(compareEventKickoff);
+  const remaining = matches.filter((event) => !used.has(String(event.id))).sort(compareEventKickoff);
   for (const event of remaining) {
     const emptyIndex = slots.findIndex((slot) => !slot);
     if (emptyIndex < 0) break;
@@ -219,7 +219,7 @@ function matchCenterY(roundIndex: number, matchIndex: number) {
 }
 
 function compareEventKickoff(a: Event, b: Event) {
-  return Date.parse(a.date) - Date.parse(b.date) || a.id.localeCompare(b.id);
+  return Date.parse(a.date) - Date.parse(b.date) || String(a.id).localeCompare(String(b.id));
 }
 
 function isEventInRound(event: Event, roundId: string) {
