@@ -65,10 +65,6 @@ const TopStats: React.FC = () => {
     .map((row) => ({ ...row, primary: statNumber(rowEntry(row.id, standings), ['A', 'pointsAgainst']) ?? row.primary, primaryDisplay: statDisplay(rowEntry(row.id, standings), ['A', 'pointsAgainst']) ?? String(row.primary) }))
     .sort((a, b) => a.primary - b.primary || a.name.localeCompare(b.name))
     .slice(0, TEAM_LEADER_LIMIT);
-  const pointsTable = teamRows
-    .map((row) => ({ ...row, primary: statNumber(rowEntry(row.id, standings), ['P', 'points']) ?? row.primary, primaryDisplay: statDisplay(rowEntry(row.id, standings), ['P', 'points']) ?? String(row.primary) }))
-    .sort((a, b) => b.primary - a.primary || compareGoalDifference(rowEntry(b.id, standings), rowEntry(a.id, standings)) || a.name.localeCompare(b.name))
-    .slice(0, TEAM_LEADER_LIMIT);
 
   return (
     <div className="stats-grid fade-in">
@@ -99,7 +95,6 @@ const TopStats: React.FC = () => {
       ))}
       <TeamLeaderCard title="🔥 Đội ghi bàn nhiều" rows={topScoringTeams} valueSuffix="BT" />
       <TeamLeaderCard title="🛡️ Thủng lưới ít" rows={bestDefenses} valueSuffix="BB" lowerIsBetter />
-      <TeamLeaderCard title="📈 Phong độ / điểm bảng" rows={pointsTable} valueSuffix="đ" />
     </div>
   );
 };
@@ -173,10 +168,6 @@ function findStat(stats: StatValue[], keys: string[]) {
     const candidates = [item.abbreviation, item.name, item.displayName, item.shortDisplayName].map(normalizeStatKey);
     return candidates.some((candidate) => normalizedKeys.includes(candidate));
   });
-}
-
-function compareGoalDifference(left: StandingsEntry | undefined, right: StandingsEntry | undefined) {
-  return (statNumber(left, ['GD', 'pointDifferential']) ?? 0) - (statNumber(right, ['GD', 'pointDifferential']) ?? 0);
 }
 
 function normalizeStatKey(value: string) {
