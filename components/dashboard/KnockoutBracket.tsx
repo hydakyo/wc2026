@@ -1,83 +1,68 @@
 "use client";
 
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
-import { standings as fallbackStandings, teams as fallbackTeams } from '@/lib/worldcup-data';
-import { fetchScoreboard, fetchStandings } from '../../utils/api';
-import type { ESPNStandingsResponse, Event, StatValue, StandingsEntry, Team } from '../../types/espn';
-import { translateTeamName } from '../../utils/translations';
+import { fetchScoreboard } from '../../utils/api';
+import type { Event } from '../../types/espn';
 import MatchCard from './MatchCard';
 import Loader from './Loader';
 import '../../styles/KnockoutBracket.css';
 
 const REFRESH_INTERVAL_MS = 30000;
 
-type BracketEntrant = {
-  label: string;
-  logo?: string;
-  flag?: string;
+const ROUNDS = [
+  { id: 'round-of-32', title: 'Vòng 32 đội', matchCount: 16, placeholder: 'R32' },
+  { id: 'round-of-16', title: 'Vòng 16 đội', matchCount: 8, placeholder: 'R16' },
+  { id: 'quarterfinals', title: 'Tứ kết', matchCount: 4, placeholder: 'QF' },
+  { id: 'semifinals', title: 'Bán kết', matchCount: 2, placeholder: 'SF' },
+  { id: 'final', title: 'Chung kết', matchCount: 1, placeholder: 'F' }
+] as const;
+
+const BRACKET_BASE_MATCHES = ROUNDS[0].matchCount;
+const BRACKET_ROUND_WIDTH = 250;
+const BRACKET_ROUND_GAP = 84;
+const BRACKET_CARD_HEIGHT = 132;
+const BRACKET_LANE_HEIGHT = 136;
+const BRACKET_TITLE_HEIGHT = 60;
+const BRACKET_CONTENT_HEIGHT = BRACKET_BASE_MATCHES * BRACKET_LANE_HEIGHT;
+const BRACKET_WIDTH = ROUNDS.length * BRACKET_ROUND_WIDTH + (ROUNDS.length - 1) * BRACKET_ROUND_GAP;
+const BRACKET_HEIGHT = BRACKET_TITLE_HEIGHT + BRACKET_CARD_HEIGHT + BRACKET_CONTENT_HEIGHT;
+
+const OFFICIAL_EVENT_ORDER: Record<string, string[]> = {
+  // ESPN returns knockout matches chronologically. This order follows the real advancement tree.
+  'round-of-32': [
+    '53452545', '53452547',
+    '53452541', '53452543',
+    '53452549', '53452551',
+    '53452553', '53452555',
+    '53452557', '53452561',
+    '53452563', '53452565',
+    '53452569', '53452503',
+    '53452505', '53452507'
+  ],
+  'round-of-16': [
+    '53452511', '53452509',
+    '53452513', '53452515',
+    '53452517', '53452519',
+    '53452521', '53452523'
+  ],
+  quarterfinals: ['53452525', '53452527', '53452529', '53452531'],
+  semifinals: ['53452533', '53452535'],
+  final: ['53452537']
 };
-
-type TeamSeed = {
-  team: BracketEntrant;
-  group: string;
-  points: number;
-  goalDifference: number;
-  goalsFor: number;
-};
-
-type ProjectedSlot = {
-  isReal: false;
-  home: BracketEntrant;
-  away: BracketEntrant;
-  status: 'Dự phóng' | 'Chờ kết quả';
-};
-
-type RealSlot = {
-  isReal: true;
-  data: Event;
-};
-
-type BracketSlot = ProjectedSlot | RealSlot;
-
-type RoundConfig = {
-  id: string;
-  title: string;
-  matchCount: number;
-};
-
-const ROUNDS: RoundConfig[] = [
-  { id: 'round-of-32', title: 'Vòng 32 đội', matchCount: 16 },
-  { id: 'round-of-16', title: 'Vòng 16 đội', matchCount: 8 },
-  { id: 'quarterfinals', title: 'Tứ kết', matchCount: 4 },
-  { id: 'semifinals', title: 'Bán kết', matchCount: 2 },
-  { id: 'final', title: 'Chung kết', matchCount: 1 }
-];
 
 const KnockoutBracket: React.FC = () => {
   const [events, setEvents] = useState<Event[]>([]);
-  const [standings, setStandings] = useState<ESPNStandingsResponse | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   const loadMatches = useCallback(async (isInitial = false) => {
     if (isInitial) setLoading(true);
     try {
-      const [scoreboardResponse, standingsResponse] = await Promise.allSettled([
-        fetchScoreboard(),
-        fetchStandings()
-      ]);
-
-      if (scoreboardResponse.status === 'fulfilled') {
-        setEvents(scoreboardResponse.value.events || []);
-      }
-      if (standingsResponse.status === 'fulfilled') {
-        setStandings(standingsResponse.value);
-      }
-      if (scoreboardResponse.status === 'rejected' && standingsResponse.status === 'rejected') {
-        setError('Không thể tải dữ liệu từ ESPN.');
-      } else {
-        setError(null);
-      }
+      const scoreboard = await fetchScoreboard();
+      setEvents(scoreboard.events || []);
+      setError(null);
+    } catch {
+      setError('Không thể tải dữ liệu knock-out từ ESPN.');
     } finally {
       if (isInitial) setLoading(false);
     }
@@ -89,55 +74,63 @@ const KnockoutBracket: React.FC = () => {
     return () => window.clearInterval(interval);
   }, [loadMatches]);
 
-  const projectedRounds = useMemo(() => buildProjectedRounds(standings), [standings]);
+  const actualSlotsByRound = useMemo(() => {
+    return Object.fromEntries(
+      ROUNDS.map((round) => [round.id, getActualSlotsForRound(events, round.id, round.matchCount)])
+    ) as Record<string, Array<Event | undefined>>;
+  }, [events]);
+
+  const connectorPaths = useMemo(() => buildConnectorPaths(), []);
 
   if (loading) return <Loader message="Đang tải sơ đồ..." />;
   if (error) return <div className="dashboard-error">⚠️ {error}</div>;
 
-  const getMatchesForRound = (roundId: string) => {
-    return events.filter((event) => isEventInRound(event, roundId));
-  };
-
   return (
     <div className="bracket-container fade-in">
       <p className="bracket-note">
-        Lưu ý: ESPN public scoreboard chưa luôn trả dữ liệu vòng loại trực tiếp. Những ô có nhãn <b>Dự phóng</b> được dựng từ bảng xếp hạng hiện có; khi ESPN có fixture chính thức, hệ thống sẽ ưu tiên dữ liệu ESPN.
+        Dữ liệu knock-out được map theo cây đấu chính thức, không render theo thứ tự thời gian ESPN trả về. Vì vậy các đường nối luôn đi đúng nhánh thắng lên vòng sau.
       </p>
 
       <div className="bracket-scroll-area">
-        <div className="bracket-stages">
-          {ROUNDS.map((round, roundIndex) => {
-            const actualMatches = getMatchesForRound(round.id);
-            const projectedSlots = projectedRounds[round.id] ?? [];
-            const slots: BracketSlot[] = Array.from({ length: round.matchCount }).map((_, idx) => {
-              if (actualMatches[idx]) return { isReal: true, data: actualMatches[idx] };
-              return projectedSlots[idx] ?? makePendingSlot(idx + 1);
-            });
+        <div
+          className="bracket-board"
+          style={{
+            width: BRACKET_WIDTH,
+            height: BRACKET_HEIGHT,
+            '--bracket-card-height': `${BRACKET_CARD_HEIGHT}px`
+          } as React.CSSProperties}
+        >
+          <svg className="bracket-connectors" width={BRACKET_WIDTH} height={BRACKET_HEIGHT} aria-hidden="true">
+            {connectorPaths.map((path, index) => <path key={index} d={path} vectorEffect="non-scaling-stroke" />)}
+          </svg>
 
-            return (
-              <div key={round.id} className="bracket-round">
-                <h3 className="round-title">{round.title}</h3>
-                <div className="round-matches">
-                  {slots.map((slot, idx) => (
-                    <div className={`bracket-match-wrapper round-${roundIndex}`} key={`${round.id}-${idx}`}>
-                      {slot.isReal ? (
-                        <MatchCard match={slot.data} />
-                      ) : (
-                        <div className={`mock-match-card ${slot.status === 'Dự phóng' ? 'projected' : 'pending'}`}>
-                          <ProjectedTeam entrant={slot.home} />
-                          <div className="mock-divider"></div>
-                          <ProjectedTeam entrant={slot.away} />
-                          <div className="mock-status">{slot.status}</div>
-                        </div>
-                      )}
-                      {roundIndex < ROUNDS.length - 1 && (
-                        <div className={`connector-line connector-${idx % 2 === 0 ? 'top' : 'bottom'}`}></div>
-                      )}
-                    </div>
-                  ))}
+          {ROUNDS.map((round, roundIndex) => (
+            <h3
+              key={`${round.id}-title`}
+              className="round-title"
+              style={{ left: roundLeft(roundIndex), width: BRACKET_ROUND_WIDTH }}
+            >
+              {round.title}
+            </h3>
+          ))}
+
+          {ROUNDS.flatMap((round, roundIndex) => {
+            const actualSlots = actualSlotsByRound[round.id] ?? [];
+
+            return Array.from({ length: round.matchCount }).map((_, matchIndex) => {
+              const match = actualSlots[matchIndex];
+              const position = matchPosition(roundIndex, matchIndex);
+
+              return (
+                <div
+                  className={`bracket-match-wrapper round-${roundIndex}`}
+                  key={`${round.id}-${matchIndex}`}
+                  style={{ left: position.x, top: position.y, width: BRACKET_ROUND_WIDTH }}
+                >
+                  {match ? <MatchCard match={match} /> : <PendingMatch roundIndex={roundIndex} matchIndex={matchIndex} />}
                 </div>
-              </div>
-            );
+              );
+            });
           })}
         </div>
       </div>
@@ -145,164 +138,88 @@ const KnockoutBracket: React.FC = () => {
   );
 };
 
-function ProjectedTeam({ entrant }: { entrant: BracketEntrant }) {
+function PendingMatch({ roundIndex, matchIndex }: { roundIndex: number; matchIndex: number }) {
+  const previous = ROUNDS[roundIndex - 1]?.placeholder;
+  const firstLabel = roundIndex === 0 ? `Cặp ${matchIndex + 1}A` : `Thắng ${previous}-${matchIndex * 2 + 1}`;
+  const secondLabel = roundIndex === 0 ? `Cặp ${matchIndex + 1}B` : `Thắng ${previous}-${matchIndex * 2 + 2}`;
+
   return (
-    <div className="mock-team">
-      {entrant.logo ? (
-        <img src={entrant.logo} alt="" className="mock-team-logo" />
-      ) : entrant.flag ? (
-        <span className="mock-team-flag" aria-hidden="true">{entrant.flag}</span>
-      ) : null}
-      <span>{entrant.label}</span>
+    <div className="mock-match-card pending">
+      <div className="mock-team"><span>{firstLabel}</span></div>
+      <div className="mock-divider"></div>
+      <div className="mock-team"><span>{secondLabel}</span></div>
+      <div className="mock-status">Chờ kết quả</div>
     </div>
   );
 }
 
-function buildProjectedRounds(standings: ESPNStandingsResponse | null): Record<string, ProjectedSlot[]> {
-  const seedsFromEspn = standingsToSeeds(standings);
-  const seeds = seedsFromEspn.length >= 32 ? seedsFromEspn : fallbackSeeds();
+function getActualSlotsForRound(events: Event[], roundId: string, matchCount: number): Array<Event | undefined> {
+  const matches = events.filter((event) => isEventInRound(event, roundId));
+  const order = OFFICIAL_EVENT_ORDER[roundId];
 
-  return {
-    'round-of-32': buildRoundOf32(seeds),
-    'round-of-16': placeholderRound(8, 'R32'),
-    quarterfinals: placeholderRound(4, 'R16'),
-    semifinals: placeholderRound(2, 'QF'),
-    final: [{ isReal: false, home: textEntrant('Thắng SF-1'), away: textEntrant('Thắng SF-2'), status: 'Chờ kết quả' }]
-  };
-}
+  if (!order?.length) return matches.sort(compareEventKickoff).slice(0, matchCount);
 
-function standingsToSeeds(data: ESPNStandingsResponse | null): TeamSeed[] {
-  if (!data?.children?.length) return [];
+  const slots: Array<Event | undefined> = Array.from({ length: matchCount });
+  const byId = new Map(matches.map((event) => [event.id, event]));
+  const used = new Set<string>();
 
-  const byGroup = data.children.map((group) => {
-    const groupCode = extractGroupCode(group.name || group.abbreviation || group.id);
-    const rows = (group.standings?.entries ?? [])
-      .map((entry) => standingEntryToSeed(entry, groupCode))
-      .sort(compareSeeds);
-
-    return { group: groupCode, rows };
-  }).filter((group) => group.group && group.rows.length >= 3);
-
-  const winners = byGroup.map((group) => group.rows[0]).filter(Boolean);
-  const runnersUp = byGroup.map((group) => group.rows[1]).filter(Boolean);
-  const bestThird = byGroup.map((group) => group.rows[2]).filter(Boolean)
-    .sort(compareSeeds)
-    .slice(0, 8);
-
-  return [...winners, ...runnersUp, ...bestThird];
-}
-
-function standingEntryToSeed(entry: StandingsEntry, group: string): TeamSeed {
-  const stats = entry.stats ?? [];
-  return {
-    team: teamEntrantFromEspn(entry.team),
-    group,
-    points: statValue(stats, ['P', 'PTS', 'points']) || 0,
-    goalDifference: statValue(stats, ['GD', 'goalDifference']) || 0,
-    goalsFor: statValue(stats, ['GF', 'goalsFor']) || 0
-  };
-}
-
-function fallbackSeeds(): TeamSeed[] {
-  const groups = Array.from(new Set(fallbackStandings.map((row) => row.group))).sort();
-  const tableByGroup = new Map(groups.map((group) => [group, fallbackStandings.filter((row) => row.group === group).sort(rankRows)]));
-  const winners = groups.map((group) => tableByGroup.get(group)?.[0]).filter(isStandingRow).map(fallbackRowToSeed);
-  const runnersUp = groups.map((group) => tableByGroup.get(group)?.[1]).filter(isStandingRow).map(fallbackRowToSeed);
-  const bestThird = groups.map((group) => tableByGroup.get(group)?.[2]).filter(isStandingRow).sort(rankRows).slice(0, 8).map(fallbackRowToSeed);
-  return [...winners, ...runnersUp, ...bestThird];
-}
-
-function fallbackRowToSeed(row: typeof fallbackStandings[number]): TeamSeed {
-  const team = fallbackTeams.find((item) => item.code === row.team);
-  return {
-    team: {
-      label: team?.name ?? row.team,
-      flag: team?.flag
-    },
-    group: row.group,
-    points: row.points,
-    goalDifference: row.gd,
-    goalsFor: row.gf
-  };
-}
-
-function buildRoundOf32(seeds: TeamSeed[]): ProjectedSlot[] {
-  const winners = seeds.slice(0, 12);
-  const runnersUp = seeds.slice(12, 24);
-  const bestThird = seeds.slice(24, 32);
-  const highSeeds = [...winners, ...runnersUp.slice(0, 4)];
-  const lowSeeds = [...runnersUp.slice(4), ...bestThird].reverse();
-
-  return Array.from({ length: 16 }).map((_, index) => {
-    const home = highSeeds[index];
-    const away = takeOpponent(lowSeeds, home?.group);
-    return {
-      isReal: false,
-      home: home?.team ?? textEntrant(`Hạt giống ${index + 1}`),
-      away: away?.team ?? textEntrant(`Đội chờ xác định ${index + 1}`),
-      status: 'Dự phóng'
-    };
+  order.slice(0, matchCount).forEach((eventId, index) => {
+    const event = byId.get(eventId);
+    if (!event) return;
+    slots[index] = event;
+    used.add(event.id);
   });
+
+  const remaining = matches.filter((event) => !used.has(event.id)).sort(compareEventKickoff);
+  for (const event of remaining) {
+    const emptyIndex = slots.findIndex((slot) => !slot);
+    if (emptyIndex < 0) break;
+    slots[emptyIndex] = event;
+  }
+
+  return slots;
 }
 
-function placeholderRound(count: number, previousRoundCode: string): ProjectedSlot[] {
-  return Array.from({ length: count }).map((_, index) => ({
-    isReal: false,
-    home: textEntrant(`Thắng ${previousRoundCode}-${index * 2 + 1}`),
-    away: textEntrant(`Thắng ${previousRoundCode}-${index * 2 + 2}`),
-    status: 'Chờ kết quả'
-  }));
+function buildConnectorPaths() {
+  const paths: string[] = [];
+
+  for (let roundIndex = 0; roundIndex < ROUNDS.length - 1; roundIndex += 1) {
+    const nextRound = ROUNDS[roundIndex + 1];
+    const sourceX = roundLeft(roundIndex) + BRACKET_ROUND_WIDTH;
+    const targetX = roundLeft(roundIndex + 1);
+    const middleX = sourceX + (targetX - sourceX) / 2;
+
+    for (let pairIndex = 0; pairIndex < nextRound.matchCount; pairIndex += 1) {
+      const topY = matchCenterY(roundIndex, pairIndex * 2);
+      const bottomY = matchCenterY(roundIndex, pairIndex * 2 + 1);
+      const targetY = matchCenterY(roundIndex + 1, pairIndex);
+
+      paths.push(`M ${sourceX} ${topY} H ${middleX}`);
+      paths.push(`M ${sourceX} ${bottomY} H ${middleX}`);
+      paths.push(`M ${middleX} ${topY} V ${bottomY}`);
+      paths.push(`M ${middleX} ${targetY} H ${targetX}`);
+    }
+  }
+
+  return paths;
 }
 
-function makePendingSlot(index: number): ProjectedSlot {
-  return { isReal: false, home: textEntrant(`Đội chờ ${index}A`), away: textEntrant(`Đội chờ ${index}B`), status: 'Chờ kết quả' };
+function matchPosition(roundIndex: number, matchIndex: number) {
+  return { x: roundLeft(roundIndex), y: matchCenterY(roundIndex, matchIndex) };
 }
 
-function takeOpponent(candidates: TeamSeed[], avoidGroup?: string): TeamSeed | undefined {
-  if (!candidates.length) return undefined;
-  const preferredIndex = candidates.findIndex((candidate) => candidate.group !== avoidGroup);
-  const index = preferredIndex >= 0 ? preferredIndex : 0;
-  return candidates.splice(index, 1)[0];
+function roundLeft(roundIndex: number) {
+  return roundIndex * (BRACKET_ROUND_WIDTH + BRACKET_ROUND_GAP);
 }
 
-function rankRows(a: typeof fallbackStandings[number], b: typeof fallbackStandings[number]) {
-  return b.points - a.points || b.gd - a.gd || b.gf - a.gf || a.team.localeCompare(b.team);
+function matchCenterY(roundIndex: number, matchIndex: number) {
+  const matchCount = ROUNDS[roundIndex].matchCount;
+  const normalizedCenter = (matchIndex + 0.5) / matchCount;
+  return BRACKET_TITLE_HEIGHT + BRACKET_CARD_HEIGHT / 2 + normalizedCenter * BRACKET_CONTENT_HEIGHT;
 }
 
-function isStandingRow(row: typeof fallbackStandings[number] | undefined): row is typeof fallbackStandings[number] {
-  return row !== undefined;
-}
-
-function compareSeeds(a: TeamSeed, b: TeamSeed) {
-  return b.points - a.points || b.goalDifference - a.goalDifference || b.goalsFor - a.goalsFor || a.team.label.localeCompare(b.team.label);
-}
-
-function statValue(stats: StatValue[], keys: string[]) {
-  const normalizedKeys = keys.map(normalizeText);
-  const stat = stats.find((item) => {
-    const candidates = [item.abbreviation, item.name, item.displayName, item.shortDisplayName].map(normalizeText);
-    return candidates.some((candidate) => normalizedKeys.includes(candidate));
-  });
-  return Number(stat?.value ?? stat?.displayValue ?? 0);
-}
-
-function teamEntrantFromEspn(team: Team): BracketEntrant {
-  const fallback = fallbackTeams.find((item) => item.code === team.abbreviation);
-  const rawName = team.shortDisplayName || team.displayName || team.name || team.abbreviation;
-  return {
-    label: translateTeamName(rawName),
-    logo: team.logos?.[0]?.href || team.logo,
-    flag: fallback?.flag
-  };
-}
-
-function textEntrant(label: string): BracketEntrant {
-  return { label };
-}
-
-function extractGroupCode(value: string) {
-  const match = value.match(/[A-L]$/i) ?? value.match(/GROUP\s*([A-L])/i);
-  return match?.[1]?.toUpperCase() ?? value;
+function compareEventKickoff(a: Event, b: Event) {
+  return Date.parse(a.date) - Date.parse(b.date) || a.id.localeCompare(b.id);
 }
 
 function isEventInRound(event: Event, roundId: string) {
