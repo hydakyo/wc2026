@@ -161,21 +161,12 @@ function getActualSlotsForRound(events: Event[], roundId: string, matchCount: nu
 
   const slots: Array<Event | undefined> = Array.from({ length: matchCount });
   const byId = new Map(matches.map((event) => [String(event.id), event]));
-  const used = new Set<string>();
 
   order.slice(0, matchCount).forEach((eventId, index) => {
     const event = byId.get(String(eventId));
     if (!event) return;
     slots[index] = event;
-    used.add(String(event.id));
   });
-
-  const remaining = matches.filter((event) => !used.has(String(event.id))).sort(compareEventKickoff);
-  for (const event of remaining) {
-    const emptyIndex = slots.findIndex((slot) => !slot);
-    if (emptyIndex < 0) break;
-    slots[emptyIndex] = event;
-  }
 
   return slots;
 }
