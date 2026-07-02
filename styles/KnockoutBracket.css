@@ -81,6 +81,7 @@
   height: var(--bracket-card-height);
   margin: 0;
   box-sizing: border-box;
+  overflow: hidden;
 }
 
 .bracket-match-wrapper .match-card {
@@ -96,6 +97,18 @@
 .bracket-match-wrapper .match-card-header {
   font-size: 0.72rem;
   padding-bottom: 8px;
+  gap: 8px;
+}
+
+.bracket-match-wrapper .match-status {
+  flex: 0 0 auto;
+  white-space: nowrap;
+}
+
+.bracket-match-wrapper .match-venue {
+  flex: 1 1 auto;
+  min-width: 0;
+  max-width: none;
 }
 
 .bracket-match-wrapper .match-teams {
@@ -115,8 +128,12 @@
 }
 
 .bracket-match-wrapper .team-name {
+  display: block;
   font-size: 1rem;
   font-weight: 600;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .bracket-match-wrapper .team-score {
