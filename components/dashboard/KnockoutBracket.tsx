@@ -28,26 +28,26 @@ const BRACKET_WIDTH = ROUNDS.length * BRACKET_ROUND_WIDTH + (ROUNDS.length - 1) 
 const BRACKET_HEIGHT = BRACKET_TITLE_HEIGHT + BRACKET_CARD_HEIGHT + BRACKET_CONTENT_HEIGHT;
 
 const OFFICIAL_EVENT_ORDER: Record<string, string[]> = {
-  // ESPN returns knockout matches chronologically. This order follows the real advancement tree.
+  // ESPN event IDs are mapped to the official advancement tree, not kickoff order.
   'round-of-32': [
-    '53452545', '53452547',
-    '53452541', '53452543',
-    '53452549', '53452551',
-    '53452553', '53452555',
-    '53452557', '53452561',
-    '53452563', '53452565',
-    '53452569', '53452503',
-    '53452505', '53452507'
+    '760486', '760488',
+    '760489', '760492',
+    '760496', '760497',
+    '760494', '760493',
+    '760487', '760490',
+    '760491', '760495',
+    '760499', '760501',
+    '760498', '760500'
   ],
   'round-of-16': [
-    '53452511', '53452509',
-    '53452513', '53452515',
-    '53452517', '53452519',
-    '53452521', '53452523'
+    '760502', '760503',
+    '760506', '760507',
+    '760504', '760505',
+    '760509', '760508'
   ],
-  quarterfinals: ['53452525', '53452527', '53452529', '53452531'],
-  semifinals: ['53452533', '53452535'],
-  final: ['53452537']
+  quarterfinals: ['760510', '760511', '760512', '760513'],
+  semifinals: ['760514', '760515'],
+  final: ['760517']
 };
 
 const KnockoutBracket: React.FC = () => {

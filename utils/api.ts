@@ -2,8 +2,8 @@ import type { ESPNScoreboardResponse, ESPNStandingsResponse, ESPNStatsResponse }
 
 const ESPN_BASE = "https://site.api.espn.com/apis/site/v2/sports/soccer/fifa.world";
 const ESPN_V2_BASE = "https://site.api.espn.com/apis/v2/sports/soccer/fifa.world";
-const SCOREBOARD_LOOKBACK_DAYS = 14;
 const SCOREBOARD_LOOKAHEAD_DAYS = 30;
+const WORLD_CUP_START_DATE = new Date("2026-06-11T00:00:00Z");
 
 const compactDate = (date: Date): string => {
   const year = date.getUTCFullYear();
@@ -27,7 +27,7 @@ const noStoreUrl = (url: string): string => {
 export const fetchScoreboard = async (): Promise<ESPNScoreboardResponse> => {
   try {
     const today = new Date();
-    const dates = `${compactDate(addDays(today, -SCOREBOARD_LOOKBACK_DAYS))}-${compactDate(addDays(today, SCOREBOARD_LOOKAHEAD_DAYS))}`;
+    const dates = `${compactDate(WORLD_CUP_START_DATE)}-${compactDate(addDays(today, SCOREBOARD_LOOKAHEAD_DAYS))}`;
     const response = await fetch(noStoreUrl(`${ESPN_BASE}/scoreboard?dates=${dates}&limit=300`), { cache: "no-store" });
     if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
     return await response.json();

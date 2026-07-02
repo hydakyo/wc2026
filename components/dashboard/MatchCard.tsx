@@ -91,24 +91,18 @@ function formatTeamName(team: Team) {
 function formatKickoff(value: string) {
   const date = new Date(value);
   if (Number.isNaN(date.getTime())) return '--/-- --:--';
-
-  return date.toLocaleString('vi-VN', {
-    day: '2-digit',
-    month: '2-digit',
-    hour: '2-digit',
-    minute: '2-digit',
-    hour12: false
-  }).replace(',', '');
+  const time = date.toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit', hour12: false });
+  return `${formatDateParts(date)} · ${time}`;
 }
 
 function formatMatchDate(value: string) {
   const date = new Date(value);
   if (Number.isNaN(date.getTime())) return '--/--';
+  return formatDateParts(date);
+}
 
-  return date.toLocaleDateString('vi-VN', {
-    day: '2-digit',
-    month: '2-digit'
-  });
+function formatDateParts(date: Date) {
+  return `${String(date.getDate()).padStart(2, '0')}/${String(date.getMonth() + 1).padStart(2, '0')}`;
 }
 
 export default MatchCard;
